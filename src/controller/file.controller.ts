@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { processUpload } from "../service/upload.service.js";
+import { UploadService } from "../service/upload.service.js";
 import { getDocumentsByLotId } from "../data/document.data.js";
 import { enqueueClassificationJobs } from "../queue/producer/classifier.js";
 import { enqueueExtractionJob } from "../queue/producer/extraction.producer.js";
@@ -17,7 +17,7 @@ export const handleUploadFilesController = async (
       return;
     }
 
-    const result = await processUpload(files);
+    const result = await new UploadService().processUpload(files);
 
     res.status(201).json({
       lot_id: result.lot.id,

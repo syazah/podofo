@@ -4,43 +4,49 @@ import routes from "./routes.js";
 import { supabaseAdmin } from "./config/supabase/client.js";
 import { classificationWorker } from "./queue/worker/classifier.worker.js";
 import { extractionWorker } from "./queue/worker/extraction.worker.js";
+import { HttpError } from "./config/HttpError.js";
+import httpStatus from "http-status";
+import { AppLogger } from "./config/logger.js";
 dotenv.config();
 
 const app = express();
 
+const infoLogger = AppLogger.getInfoLogger();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/health", (_req: Request, res: Response) => {
-    res.status(200).json({ status: 200, message:"Server is OK" });
+    res.status(200).json({ status: 200, message: "Server is OK" });
 });
 
 app.use("/api/v1", routes)
 
-// Global error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error(err.stack);
-    res.status(500).json({ error: "Internal Server Error" });
+    const status =
+        err instanceof HttpError ? err.status : httpStatus.INTERNAL_SERVER_ERROR;
+    const message =
+        err instanceof HttpError ? err.message : "Internal Server Error";
+    res.status(status).json({
+        error: message,
+    });
 });
 
 const port = process.env.PORT || 4444;
-
 const server = app.listen(port, () => {
-    console.log(`PODOFO is listening on port ${port}, supabaseAdmin: ${supabaseAdmin}`);
+    infoLogger.info(`PODOFO is listening on port ${port}, supabaseAdmin: ${supabaseAdmin}`);
+    infoLogger.info(`Classification worker started: ${classificationWorker.name}`);
+    infoLogger.info(`Extraction worker started: ${extractionWorker.name}`);
 });
 
-console.log(`Classification worker started: ${classificationWorker.name}`);
-console.log(`Extraction worker started: ${extractionWorker.name}`);
-
 async function shutdown() {
-    console.log("Shutting down gracefully...");
+    infoLogger.info("Shutting down gracefully...");
     await Promise.all([
         classificationWorker.close(),
         extractionWorker.close(),
     ]);
-    console.log("Workers closed.");
+    infoLogger.info("Workers closed.");
     server.close(() => {
-        console.log("Server closed.");
+        infoLogger.info("Server closed.");
         process.exit(0);
     });
 }

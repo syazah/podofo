@@ -3,7 +3,7 @@ export function getImageClassificationPrompt(imageCount: number) {
 
 You are an expert document classification system specialized in visual document analysis.
 
-You have been given ${imageCount} document images. Classify EACH image independently into exactly one of the following categories based on the dominant form of textual content.
+You have been given ${imageCount} document images, each preceded by a text label containing its documentId. Classify EACH image independently into exactly one of the following categories based on the dominant form of textual content.
 
 Classification Categories
 
