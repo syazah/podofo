@@ -8,10 +8,21 @@ export interface LotRow {
   updated_at: string;
 }
 
-export interface DocumentRow {
+export interface SourcePdfRow {
   id: string;
   lot_id: string;
   original_filename: string;
+  storage_path: string;
+  file_size: number;
+  file_hash: string;
+  page_count: number;
+  created_at: string;
+}
+
+export interface DocumentRow {
+  id: string;
+  lot_id: string;
+  source_pdf_id: string;
   storage_path: string | null;
   file_size: number;
   file_hash: string | null;

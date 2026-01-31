@@ -3,7 +3,7 @@ import type { DocumentRow } from "../types/index.js";
 
 export const createDocument = async (doc: {
   lot_id: string;
-  original_filename: string;
+  source_pdf_id: string;
   storage_path: string;
   file_size: number;
   file_hash: string;

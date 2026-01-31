@@ -24,7 +24,7 @@ export const handleUploadFilesController = async (
       failed: result.failed.length,
       documents: result.documents.map((doc) => ({
         id: doc.id,
-        filename: doc.original_filename,
+        source_pdf_id: doc.source_pdf_id,
         page_number: doc.page_number,
         storage_path: doc.storage_path,
         file_size: doc.file_size,

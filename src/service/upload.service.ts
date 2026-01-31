@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { Document, PDFDocument } from "mupdf";
 import { supabaseAdmin } from "../config/supabase/client.js";
 import { createLot, updateLotStatus } from "../data/lot.data.js";
+import { createSourcePdf } from "../data/source_pdf.data.js";
 import { createDocument } from "../data/document.data.js";
 
 const BUCKET = "pdfs";
@@ -64,19 +65,33 @@ export const processUpload = async (
   const failed: { filename: string; page: number; error: string }[] = [];
 
   for (const { file, pages } of filePagesMap) {
+    const fileHash = computeHash(file.buffer);
+    const originalStoragePath = `originals/${lot.id}/${fileHash}.pdf`;
+
+    await uploadToStorage(originalStoragePath, file.buffer);
+
+    const sourcePdf = await createSourcePdf({
+      lot_id: lot.id,
+      original_filename: file.originalname,
+      storage_path: originalStoragePath,
+      file_size: file.size,
+      file_hash: fileHash,
+      page_count: pages.length,
+    });
+
     for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
       const pageBuffer = pages[pageIndex]!;
       const pageNumber = pageIndex + 1;
 
       try {
         const pageHash = computeHash(pageBuffer);
-        const storagePath = `originals/${lot.id}/${pageHash}_pageNum${pageNumber}.pdf`;
+        const storagePath = `originals/${lot.id}/${fileHash}_pageNum${pageNumber}.pdf`;
 
         await uploadToStorage(storagePath, pageBuffer);
 
         const doc = await createDocument({
           lot_id: lot.id,
-          original_filename: file.originalname,
+          source_pdf_id: sourcePdf.id,
           storage_path: storagePath,
           file_size: pageBuffer.byteLength,
           file_hash: pageHash,
