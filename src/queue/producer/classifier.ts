@@ -1,9 +1,10 @@
 import { Queue } from "bullmq";
 import { redisConnection } from "../../config/redis/connection.js";
 import type { ClassificationJobData } from "../../types/classification.js";
+import type { DocumentRow } from "../../types/index.js";
 
 const QUEUE_NAME = "document-classification";
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 25;
 
 export const classificationQueue = new Queue<ClassificationJobData>(QUEUE_NAME, {
   connection: redisConnection,
@@ -20,7 +21,7 @@ export const classificationQueue = new Queue<ClassificationJobData>(QUEUE_NAME, 
 
 export const enqueueClassificationJobs = async (
   lotId: string,
-  documents: import("../../types/index.js").DocumentRow[]
+  documents: DocumentRow[]
 ) => {
   const batches: typeof documents[] = [];
   for (let i = 0; i < documents.length; i += BATCH_SIZE) {

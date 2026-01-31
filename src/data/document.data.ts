@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "../config/supabase/client.js";
 import type { ClassificationResult } from "../types/classification.js";
+import type { ExtractionResult } from "../types/extraction.js";
 import type { DocumentRow } from "../types/index.js";
 
 export const createDocument = async (doc: {
@@ -48,5 +49,26 @@ export const updateDocumentClassification = async (
 
   if (error)
     throw new Error(`Failed to update classification for document ${documentId}: ${error.message}`);
+  return data as DocumentRow;
+};
+
+export const updateDocumentExtraction = async (
+  documentId: string,
+  result: ExtractionResult
+) => {
+  const { data, error } = await supabaseAdmin
+    .from("documents")
+    .update({
+      extracted_data: result.extractedData,
+      confidence: result.confidence,
+      field_confidences: result.fieldConfidences,
+      status: "extracted",
+    })
+    .eq("id", documentId)
+    .select()
+    .single();
+
+  if (error)
+    throw new Error(`Failed to update extraction for document ${documentId}: ${error.message}`);
   return data as DocumentRow;
 };

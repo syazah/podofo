@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import routes from "./routes.js";
 import { supabaseAdmin } from "./config/supabase/client.js";
 import { classificationWorker } from "./queue/worker/classifier.worker.js";
+import { extractionWorker } from "./queue/worker/extraction.worker.js";
 dotenv.config();
 
 const app = express();
@@ -29,11 +30,15 @@ const server = app.listen(port, () => {
 });
 
 console.log(`Classification worker started: ${classificationWorker.name}`);
+console.log(`Extraction worker started: ${extractionWorker.name}`);
 
 async function shutdown() {
     console.log("Shutting down gracefully...");
-    await classificationWorker.close();
-    console.log("Classification worker closed.");
+    await Promise.all([
+        classificationWorker.close(),
+        extractionWorker.close(),
+    ]);
+    console.log("Workers closed.");
     server.close(() => {
         console.log("Server closed.");
         process.exit(0);
