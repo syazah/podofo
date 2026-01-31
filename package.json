@@ -1,0 +1,35 @@
+{
+  "name": "podofo",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch ./src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^7.3.0",
+    "@supabase/supabase-js": "^2.93.3",
+    "@types/dotenv": "^6.1.1",
+    "@types/multer": "^2.0.0",
+    "@types/pg": "^8.16.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "http-status": "^2.1.0",
+    "multer": "^2.0.2",
+    "pg": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.1.0",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
