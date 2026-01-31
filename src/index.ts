@@ -2,6 +2,7 @@ import express, { type Request, type Response, type NextFunction } from "express
 import dotenv from "dotenv";
 import routes from "./routes.js";
 import { supabaseAdmin } from "./config/supabase/client.js";
+import { classificationWorker } from "./queue/worker/classifier.worker.js";
 dotenv.config();
 
 const app = express();
@@ -27,8 +28,12 @@ const server = app.listen(port, () => {
     console.log(`PODOFO is listening on port ${port}, supabaseAdmin: ${supabaseAdmin}`);
 });
 
-function shutdown() {
+console.log(`Classification worker started: ${classificationWorker.name}`);
+
+async function shutdown() {
     console.log("Shutting down gracefully...");
+    await classificationWorker.close();
+    console.log("Classification worker closed.");
     server.close(() => {
         console.log("Server closed.");
         process.exit(0);

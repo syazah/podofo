@@ -1,5 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { processUpload } from "../service/upload.service.js";
+import { getDocumentsByLotId } from "../data/document.data.js";
+import { enqueueClassificationJobs } from "../queue/producer/classifier.js";
 
 export const handleUploadFilesController = async (
   req: Request,
@@ -30,6 +32,39 @@ export const handleUploadFilesController = async (
         file_size: doc.file_size,
       })),
       errors: result.failed,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleClassifyController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { lotId } = req.body as { lotId?: string };
+
+    if (!lotId) {
+      res.status(400).json({ error: "lotId is required" });
+      return;
+    }
+
+    const documents = await getDocumentsByLotId(lotId);
+
+    if (documents.length === 0) {
+      res.status(404).json({ error: `No documents found for lot ${lotId}` });
+      return;
+    }
+
+    const { jobCount, batchSize } = await enqueueClassificationJobs(lotId, documents);
+
+    res.status(202).json({
+      lotId,
+      totalDocuments: documents.length,
+      jobCount,
+      batchSize,
     });
   } catch (error) {
     next(error);
