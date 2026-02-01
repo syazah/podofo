@@ -2,9 +2,16 @@ import type { ConnectionOptions } from "bullmq";
 import dotenv from "dotenv";
 dotenv.config();
 
-const redisUrl = new URL(process.env.REDIS_URL ?? "redis://localhost:6379");
-
 export const redisConnection: ConnectionOptions = {
-  host: redisUrl.hostname,
-  port: Number(redisUrl.port) || 6379,
+  host: process.env.REDIS_HOST!,
+  port: Number(process.env.REDIS_PORT) || 6379,
+  ...(process.env.REDIS_USERNAME && {
+    username: process.env.REDIS_USERNAME,
+  }),
+  ...(process.env.REDIS_PASSWORD && {
+    password: process.env.REDIS_PASSWORD,
+  }),
+  ...(process.env.REDIS_TLS === "true" && {
+    tls: {},
+  }),
 };
