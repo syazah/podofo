@@ -9,7 +9,7 @@ import { S3Storage } from "../data/storage.data.js";
 import { AppLogger } from "../config/logger.js";
 import { AI } from "./ai.service.js";
 
-const GEMINI_BATCH_SIZE = 10;
+const GEMINI_BATCH_SIZE = 25;
 
 export class ClassificationService {
   private assignedModel: string;
@@ -80,14 +80,17 @@ export class ClassificationService {
 
   private async classify(
     chunk: { doc: DocumentRow; buffer: Buffer }[]
-  ): Promise<{ documentId: string; success: boolean; error?: string }[]> {
-    const results: { documentId: string; success: boolean; error?: string }[] = [];
+  ): Promise<{ documentId: string; success: boolean; error?: string, documentPart?: ReturnType<typeof createPartFromBase64> }[]> {
+    const results: { documentId: string; success: boolean; error?: string, documentPart?: ReturnType<typeof createPartFromBase64>, doc: DocumentRow }[] = [];
 
     // Build contents: interleave docId labels with image parts, then the prompt
     const contentParts: (string | ReturnType<typeof createPartFromBase64>)[] = [];
+    const documentPart: { documentId: string; part: ReturnType<typeof createPartFromBase64> }[] = [];
     for (const { doc, buffer } of chunk) {
       contentParts.push(`Document ID: ${doc.id}`);
-      contentParts.push(createPartFromBase64(buffer.toString("base64"), "image/png"));
+      const part = createPartFromBase64(buffer.toString("base64"), "image/png");
+      contentParts.push(part);
+      documentPart.push({ documentId: doc.id, part });
     }
     contentParts.push(getImageClassificationPrompt(chunk.length));
 
@@ -112,7 +115,7 @@ export class ClassificationService {
       for (const { doc } of chunk) {
         const parsed = classificationMap.get(doc.id);
         if (!parsed) {
-          results.push({ documentId: doc.id, success: false, error: "No classification returned for this document" });
+          results.push({ documentId: doc.id, success: false, error: "No classification returned for this document", doc });
           continue;
         }
 
@@ -127,13 +130,18 @@ export class ClassificationService {
 
         try {
           await updateDocumentClassification(doc.id, result);
-          results.push({ documentId: doc.id, success: true });
+          const imagePart = documentPart.find(dp => dp.documentId === doc.id)?.part;
+          if (!imagePart) {
+            results.push({ documentId: doc.id, success: false, error: "Image part not found", doc });
+            continue;
+          }
+          results.push({ documentId: doc.id, success: true, documentPart: imagePart, doc });
           this.infoLogger.info(
             `Classified document ${doc.id}: ${classification} (confidence: ${parsed.confidence})`
           );
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          results.push({ documentId: doc.id, success: false, error: message });
+          results.push({ documentId: doc.id, success: false, error: message, doc });
           this.errorLogger.error(`Failed to update classification for document ${doc.id}: ${message}`);
         }
       }
@@ -141,7 +149,7 @@ export class ClassificationService {
       const message = err instanceof Error ? err.message : String(err);
       this.errorLogger.error(`Gemini batch classification failed: ${message}`);
       for (const { doc } of chunk) {
-        results.push({ documentId: doc.id, success: false, error: message });
+        results.push({ documentId: doc.id, success: false, error: message, doc });
       }
     }
 

@@ -37,35 +37,42 @@ export const classificationWorker = new Worker<ClassificationJobData>(
       max: 10,
       duration: 60_000,
     },
+    lockDuration: 120_000,
+    lockRenewTime: 30_000,
   }
 );
 
-classificationWorker.on("completed", async (job) => {
+classificationWorker.on("completed", async (job, returnValue) => {
   infoLogger.info(`[Worker] Job ${job.id} completed successfully`);
 
   try {
     const { lotId } = job.data;
-    const counts = await getDocumentCountsByStatus(lotId);
+    const { succeeded, failed, results } = returnValue;
 
-    // Check if all documents are done with classification (classified or failed)
-    if (counts.classified + counts.failed === counts.total) {
+    const totalInBatch = results.length;
+    const processedInBatch = succeeded + failed;
+
+    if (processedInBatch === totalInBatch) {
       infoLogger.info(
-        `[Worker] All documents in lot ${lotId} classified (${counts.classified} ok, ${counts.failed} failed). Enqueueing extraction.`
+        `[Worker] Batch for lot ${lotId} complete (${succeeded} ok, ${failed} failed).`
       );
 
-      const documents = await getDocumentsByLotId(lotId);
-      const classified = documents.filter((doc) => doc.status === "classified");
-
-      if (classified.length > 0) {
-        const { jobCount, batchSize } = await enqueueExtractionJob(lotId, classified);
+      if (succeeded > 0) {
+        const successfulDocs = results
+          .filter((r: any) => r.success && r.documentPart)
+          .map((r: any) => ({
+            id: r.documentId,
+            documentPart: r.documentPart,
+            doc: r.doc,
+          }));
+        const { jobCount, batchSize } = await enqueueExtractionJob(lotId, successfulDocs);
         await updateLotStatusOnly(lotId, "extracting");
         infoLogger.info(
           `[Worker] Lot ${lotId}: enqueued ${jobCount} extraction jobs (batch size ${batchSize})`
         );
       } else {
-        // All documents failed classification
         await updateLotStatusOnly(lotId, "failed");
-        errorLogger.error(`[Worker] Lot ${lotId}: all documents failed classification`);
+        errorLogger.error(`[Worker] Lot ${lotId}: all documents in batch failed classification`);
       }
     }
   } catch (err) {
@@ -73,6 +80,7 @@ classificationWorker.on("completed", async (job) => {
     errorLogger.error(`[Worker] Error in classification auto-chain for job ${job.id}: ${message}`);
   }
 });
+
 
 classificationWorker.on("failed", (job, err) => {
   errorLogger.error(`[Worker] Job ${job?.id} failed: ${err.message}`);

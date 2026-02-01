@@ -35,6 +35,8 @@ export const extractionWorker = new Worker<ExtractionJobData>(
       max: 10,
       duration: 60_000,
     },
+    lockDuration: 120_000,
+    lockRenewTime: 30_000,
   }
 );
 

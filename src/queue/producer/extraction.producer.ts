@@ -2,6 +2,7 @@ import { Queue } from "bullmq";
 import type { ExtractionJobData } from "../../types/extraction.js";
 import { redisConnection } from "../../config/redis/connection.js";
 import type { DocumentRow } from "../../types/index.js";
+import type { createPartFromBase64 } from "@google/genai";
 
 const QUEUE_NAME = "document-extraction";
 const BATCH_SIZE = 25;
@@ -21,7 +22,7 @@ export const extractionQueue = new Queue<ExtractionJobData>(QUEUE_NAME, {
 
 export async function enqueueExtractionJob(
     lotId: string,
-    documents: DocumentRow[]
+    documents: { docId: string; documentPart: ReturnType<typeof createPartFromBase64>, doc: DocumentRow }[]
 ) {
     const batches: typeof documents[] = [];
     for (let i = 0; i < documents.length; i += BATCH_SIZE) {

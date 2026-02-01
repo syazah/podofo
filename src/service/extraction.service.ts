@@ -41,40 +41,27 @@ const infoLogger = AppLogger.getInfoLogger();
 const errorLogger = AppLogger.getErrorLogger();
 const ai = new AI(GeminiClient.getGeminiClient());
 
-export async function extractDocumentBatch(documents: DocumentRow[]) {
+export async function extractDocumentBatch(documents: { docId: string; documentPart: ReturnType<typeof createPartFromBase64>, doc: DocumentRow }[]) {
   const results: { documentId: string; success: boolean; error?: string }[] = [];
 
-  // Filter documents that have storage paths and are classified
-  const extractable: DocumentRow[] = [];
-  for (const doc of documents) {
-    if (!doc.storage_path) {
-      results.push({ documentId: doc.id, success: false, error: "No storage path" });
-    } else if (!doc.assigned_model) {
-      results.push({ documentId: doc.id, success: false, error: "Not classified yet — no assigned model" });
-    } else {
-      extractable.push(doc);
-    }
-  }
+  const extractable: { docId: string; documentPart: ReturnType<typeof createPartFromBase64>, doc: DocumentRow }[] = documents;
 
-  if (extractable.length === 0) return results;
-
-  // Download all images
-  const downloaded: { doc: DocumentRow; buffer: Buffer }[] = [];
+  const downloaded: { doc: DocumentRow; imagePart: ReturnType<typeof createPartFromBase64> }[] = [];
   for (const doc of extractable) {
     try {
-      const buffer = await s3Storage.downloadImage(doc.storage_path!);
-      downloaded.push({ doc, buffer });
+      const imagePart = doc.documentPart;
+      downloaded.push({ doc: doc.doc, imagePart });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      results.push({ documentId: doc.id, success: false, error: message });
-      errorLogger.error(`Failed to download image for document ${doc.id}: ${message}`);
+      results.push({ documentId: doc.doc.id, success: false, error: message });
+      errorLogger.error(`Failed to download image for document ${doc.doc.id}: ${message}`);
     }
   }
 
   if (downloaded.length === 0) return results;
 
   // Group by assigned model for smart routing
-  const byModel = new Map<string, { doc: DocumentRow; buffer: Buffer }[]>();
+  const byModel = new Map<string, { doc: DocumentRow; imagePart: ReturnType<typeof createPartFromBase64> }[]>();
   for (const item of downloaded) {
     const model = item.doc.assigned_model ?? DEFAULT_MODEL;
     const group = byModel.get(model);
@@ -98,16 +85,16 @@ export async function extractDocumentBatch(documents: DocumentRow[]) {
 }
 
 async function extractChunk(
-  chunk: { doc: DocumentRow; buffer: Buffer }[],
+  chunk: { doc: DocumentRow; imagePart: ReturnType<typeof createPartFromBase64> }[],
   model: string
 ): Promise<{ documentId: string; success: boolean; error?: string }[]> {
   const results: { documentId: string; success: boolean; error?: string }[] = [];
 
   // Interleave docId labels with image parts, then the prompt
   const contentParts: (string | ReturnType<typeof createPartFromBase64>)[] = [];
-  for (const { doc, buffer } of chunk) {
+  for (const { doc, imagePart } of chunk) {
     contentParts.push(`Document ID: ${doc.id}`);
-    contentParts.push(createPartFromBase64(buffer.toString("base64"), "image/png"));
+    contentParts.push(imagePart);
   }
   contentParts.push(getExtractionPrompt(chunk.length));
 

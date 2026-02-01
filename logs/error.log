@@ -1,0 +1,23 @@
+{"level":"error","message":"[Worker] Error: could not renew lock for job 7","timestamp":"2026-02-01T05:02:04.488Z"}
+{"level":"error","message":"[Worker] Error: could not renew lock for job 7","timestamp":"2026-02-01T05:02:11.989Z"}
+{"level":"error","message":"[Worker] Error: could not renew lock for job 7","timestamp":"2026-02-01T05:06:04.270Z"}
+{"level":"error","message":"[Worker] Error: could not renew lock for job 7","timestamp":"2026-02-01T05:06:11.773Z"}
+{"level":"error","message":"[Worker] Error: could not renew lock for job 7","timestamp":"2026-02-01T05:06:19.277Z"}
+{"level":"error","message":"[Worker] Error: could not renew lock for job 7","timestamp":"2026-02-01T05:06:26.783Z"}
+{"level":"error","message":"[Worker] Job 7 failed: job stalled more than allowable limit","timestamp":"2026-02-01T05:06:34.278Z"}
+{"level":"error","message":"[Worker] Error: Missing lock for job 8. moveToFinished","timestamp":"2026-02-01T05:31:28.334Z"}
+{"level":"error","message":"[Worker] Error: Missing lock for job 8. moveToDelayed","timestamp":"2026-02-01T05:31:28.341Z"}
+{"level":"error","message":"[Worker] Job 8 failed: job stalled more than allowable limit","timestamp":"2026-02-01T05:35:01.496Z"}
+{"level":"error","message":"Failed to download image for document eec4d437-f7ed-4384-b15f-717e41943eb3: terminated","timestamp":"2026-02-01T06:02:16.769Z"}
+{"level":"error","message":"Failed to download image for document 5bf55158-8b33-4a63-a923-6bbd987f616c: Failed to download image at processed/3e47357a-1413-4e99-a9f6-913673d52691/208b85ddda8e4848a5b5f130f08719d19c90d84be12df33c320a4ed2e50bee2d_pageNum4.png: fetch failed","timestamp":"2026-02-01T06:02:16.773Z"}
+{"level":"error","message":"Failed to download image for document 7db73d6e-2bab-4c43-ac7e-d325aa8b2d0e: Failed to download image at processed/3e47357a-1413-4e99-a9f6-913673d52691/208b85ddda8e4848a5b5f130f08719d19c90d84be12df33c320a4ed2e50bee2d_pageNum5.png: fetch failed","timestamp":"2026-02-01T06:02:16.776Z"}
+{"level":"error","message":"Gemini batch classification failed: exception TypeError: fetch failed sending request","timestamp":"2026-02-01T06:02:16.930Z"}
+{"level":"error","message":"[Extraction Worker] Error: Missing lock for job 1. moveToDelayed","timestamp":"2026-02-01T06:07:55.035Z"}
+{"level":"error","message":"[Extraction Worker] Job 1 failed: job stalled more than allowable limit","timestamp":"2026-02-01T06:38:30.743Z"}
+{"level":"error","message":"[Extraction Worker] Job 2 failed: Cannot read properties of undefined (reading 'storage_path')","timestamp":"2026-02-01T06:42:32.692Z"}
+{"level":"error","message":"[Extraction Worker] Job 2 failed: job stalled more than allowable limit","timestamp":"2026-02-01T06:50:48.641Z"}
+{"level":"error","message":"[Extraction Worker] Error: could not renew lock for job 4","timestamp":"2026-02-01T07:02:25.022Z"}
+{"level":"error","message":"[Extraction Worker] Error: could not renew lock for job 4","timestamp":"2026-02-01T07:02:40.024Z"}
+{"level":"error","message":"[Extraction Worker] Error: could not renew lock for job 4","timestamp":"2026-02-01T07:02:55.026Z"}
+{"level":"error","message":"[Extraction Worker] Error: Lock mismatch for job 4. Cmd moveToFinished from active","timestamp":"2026-02-01T07:04:54.247Z"}
+{"level":"error","message":"[Extraction Worker] Error: Lock mismatch for job 4. Cmd moveToDelayed from active","timestamp":"2026-02-01T07:04:54.256Z"}

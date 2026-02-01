@@ -2,10 +2,12 @@ import type { Request, Response, NextFunction } from "express";
 import { UploadService } from "../service/upload.service.js";
 import { getDocumentsByLotId, getDocumentCountsByStatus } from "../data/document.data.js";
 import { getLotById, updateLotStatusOnly } from "../data/lot.data.js";
-import { enqueueClassificationJobs } from "../queue/producer/classifier.js";
+import { enqueueClassificationJobs } from "../queue/producer/classification.producer.js";
 import { enqueueBatchSubmit } from "../queue/producer/batch.producer.js";
 import { projectConstants } from "../config/constants.js";
 import { AppLogger } from "../config/logger.js";
+import { HttpError } from "../config/HttpError.js";
+import httpStatus from "http-status";
 
 const infoLogger = AppLogger.getInfoLogger();
 const uploadService = UploadService.getInstance();
@@ -33,21 +35,20 @@ export const handleUploadFilesController = async (
       return;
     }
 
-    const documents = await getDocumentsByLotId(result.lot.id);
-    const useBatchApi = documents.length > projectConstants.BATCH_API_THRESHOLD;
+    const useBatchApi = result.documents.length > projectConstants.BATCH_API_THRESHOLD;
 
     if (useBatchApi) {
       await enqueueBatchSubmit({ lotId: result.lot.id, stage: "classification" });
       infoLogger.info(
-        `[Upload] Lot ${result.lot.id}: ${documents.length} docs → Batch API path (50% cost savings)`
+        `[Upload] Lot ${result.lot.id}: ${result.documents.length} docs → Batch API path (for cost savings)`
       );
     } else {
       const { jobCount, batchSize } = await enqueueClassificationJobs(
         result.lot.id,
-        documents
+        result.documents
       );
       infoLogger.info(
-        `[Upload] Lot ${result.lot.id}: ${documents.length} docs → Standard API, enqueued ${jobCount} jobs (batch size ${batchSize})`
+        `[Upload] Lot ${result.lot.id}: ${result.documents.length} docs → Standard API, enqueued ${jobCount} jobs (batch size ${batchSize})`
       );
     }
     await updateLotStatusOnly(result.lot.id, "classifying");
@@ -68,7 +69,7 @@ export const handleUploadFilesController = async (
       errors: result.failed,
     });
   } catch (error) {
-    next(error);
+    throw error instanceof Error ? new HttpError(error.message, httpStatus.INTERNAL_SERVER_ERROR) : new HttpError("Unknown error", httpStatus.INTERNAL_SERVER_ERROR);
   }
 };
 

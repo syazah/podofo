@@ -1,3 +1,4 @@
+import type { createPartFromBase64 } from "@google/genai";
 import type { DocumentRow } from "./index.js";
 
 export interface ExtractionResult {
@@ -9,5 +10,5 @@ export interface ExtractionResult {
 
 export interface ExtractionJobData {
     lotId: string;
-    documents: DocumentRow[];
+    documents: { docId: string; documentPart: ReturnType<typeof createPartFromBase64>, doc: DocumentRow }[];
 }
