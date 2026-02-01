@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { UploadService } from "../service/upload.service.js";
-import { getDocumentsByLotId, getDocumentCountsByStatus } from "../data/document.data.js";
-import { getLotById, updateLotStatusOnly } from "../data/lot.data.js";
+import { getDocumentsByLotId, getDocumentCountsByStatus, getDocumentsByLotIdPaginated } from "../data/document.data.js";
+import { getLotById, updateLotStatusOnly, getAllLots } from "../data/lot.data.js";
 import { enqueueClassificationJobs } from "../queue/producer/classification.producer.js";
 import { enqueueBatchSubmit } from "../queue/producer/batch.producer.js";
 import { projectConstants } from "../config/constants.js";
@@ -115,6 +115,152 @@ export const handleGetLotStatus = async (
         assigned_model: doc.assigned_model,
       })),
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetLots = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const lots = await getAllLots();
+    res.status(200).json(
+      lots.map((lot) => ({
+        id: lot.id,
+        total_files: lot.total_files,
+        status: lot.status,
+        created_at: lot.created_at,
+      }))
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetLotDocuments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params.id as string;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 25));
+
+    if (!id) {
+      res.status(400).json({ error: "Lot ID is required" });
+      return;
+    }
+
+    try {
+      await getLotById(id);
+    } catch {
+      res.status(404).json({ error: `Lot ${id} not found` });
+      return;
+    }
+
+    const { documents, total } = await getDocumentsByLotIdPaginated(id, page, limit);
+
+    res.status(200).json({
+      documents: documents.map((doc) => ({
+        id: doc.id,
+        lot_id: doc.lot_id,
+        source_pdf_id: doc.source_pdf_id,
+        page_number: doc.page_number,
+        status: doc.status,
+        classification: doc.classification,
+        assigned_model: doc.assigned_model,
+        extracted_data: doc.extracted_data,
+        confidence: doc.confidence,
+        field_confidences: doc.field_confidences,
+        error_message: doc.error_message,
+      })),
+      total,
+      page,
+      limit,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleExportLotDocuments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = req.params.id as string;
+    const format = req.params.format as string;
+
+    if (!id) {
+      res.status(400).json({ error: "Lot ID is required" });
+      return;
+    }
+
+    if (format !== "csv" && format !== "json") {
+      res.status(400).json({ error: "Format must be 'csv' or 'json'" });
+      return;
+    }
+
+    try {
+      await getLotById(id);
+    } catch {
+      res.status(404).json({ error: `Lot ${id} not found` });
+      return;
+    }
+
+    const documents = await getDocumentsByLotId(id);
+
+    if (format === "json") {
+      res.setHeader("Content-Disposition", `attachment; filename=lot-${id}.json`);
+      res.setHeader("Content-Type", "application/json");
+      res.status(200).json(
+        documents.map((doc) => ({
+          id: doc.id,
+          page_number: doc.page_number,
+          classification: doc.classification,
+          status: doc.status,
+          confidence: doc.confidence,
+          extracted_data: doc.extracted_data,
+          field_confidences: doc.field_confidences,
+        }))
+      );
+      return;
+    }
+
+    // CSV export
+    const rows = documents.map((doc) => {
+      const extractedFields = doc.extracted_data
+        ? Object.entries(doc.extracted_data)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join("; ")
+        : "";
+      const fieldConfs = doc.field_confidences
+        ? Object.entries(doc.field_confidences)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join("; ")
+        : "";
+      return [
+        doc.id,
+        doc.page_number,
+        doc.classification ?? "",
+        doc.status,
+        doc.confidence ?? "",
+        `"${extractedFields.replace(/"/g, '""')}"`,
+        `"${fieldConfs.replace(/"/g, '""')}"`,
+      ].join(",");
+    });
+
+    const header = "id,page_number,classification,status,confidence,extracted_data,field_confidences";
+    const csv = [header, ...rows].join("\n");
+
+    res.setHeader("Content-Disposition", `attachment; filename=lot-${id}.csv`);
+    res.setHeader("Content-Type", "text/csv");
+    res.status(200).send(csv);
   } catch (error) {
     next(error);
   }

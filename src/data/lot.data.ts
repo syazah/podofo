@@ -45,6 +45,16 @@ export const getLotById = async (lotId: string) => {
   return data as LotRow;
 };
 
+export const getAllLots = async () => {
+  const { data, error } = await supabaseAdmin
+    .from("lots")
+    .select()
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(`Failed to fetch lots: ${error.message}`);
+  return data as LotRow[];
+};
+
 export const updateLotStatusOnly = async (lotId: string, status: string) => {
   const { data, error } = await supabaseAdmin
     .from("lots")

@@ -31,6 +31,26 @@ export const getDocumentsByLotId = async (lotId: string) => {
   return data as DocumentRow[];
 };
 
+export const getDocumentsByLotIdPaginated = async (
+  lotId: string,
+  page: number,
+  limit: number
+) => {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const { data, error, count } = await supabaseAdmin
+    .from("documents")
+    .select("*", { count: "exact" })
+    .eq("lot_id", lotId)
+    .order("page_number", { ascending: true })
+    .range(from, to);
+
+  if (error)
+    throw new Error(`Failed to fetch documents for lot ${lotId}: ${error.message}`);
+  return { documents: data as DocumentRow[], total: count ?? 0 };
+};
+
 export const updateDocumentClassification = async (
   documentId: string,
   result: ClassificationResult
