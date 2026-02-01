@@ -18,3 +18,13 @@ export const createSourcePdf = async (doc: {
   if (error) throw new Error(`Failed to create source_pdf: ${error.message}`);
   return data as SourcePdfRow;
 };
+
+export const getSourcePdfsByLotId = async (lotId: string) => {
+  const { data, error } = await supabaseAdmin
+    .from("source_pdfs")
+    .select()
+    .eq("lot_id", lotId);
+
+  if (error) throw new Error(`Failed to fetch source_pdfs for lot ${lotId}: ${error.message}`);
+  return data as SourcePdfRow[];
+}

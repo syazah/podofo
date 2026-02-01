@@ -10,6 +10,17 @@ import { S3Storage } from "../data/storage.data.js";
 export class UploadService {
   private s3Storage: S3Storage = S3Storage.getInstance();
   private preprocessService: PreprocessService = PreprocessService.getInstance();
+  private static instance: UploadService;
+
+  private constructor() { }
+
+  public static getInstance(): UploadService {
+    if (!UploadService.instance) {
+      UploadService.instance = new UploadService();
+    }
+    return UploadService.instance;
+  }
+
   private computeHash = (buffer: Uint8Array): string => {
     return crypto.createHash("sha256").update(buffer).digest("hex");
   };
@@ -107,10 +118,10 @@ export class UploadService {
 
     const lotStatus =
       failedIds.length === 0
-        ? "completed"
+        ? "uploaded"
         : processedIds.length === 0
           ? "failed"
-          : "partial_failure";
+          : "uploaded";
 
     const updatedLot = await updateLotStatus(
       lot.id,

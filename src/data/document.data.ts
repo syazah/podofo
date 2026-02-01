@@ -52,6 +52,25 @@ export const updateDocumentClassification = async (
   return data as DocumentRow;
 };
 
+export const getDocumentCountsByStatus = async (lotId: string) => {
+  const { data, error } = await supabaseAdmin
+    .from("documents")
+    .select("status")
+    .eq("lot_id", lotId);
+
+  if (error)
+    throw new Error(`Failed to fetch document counts for lot ${lotId}: ${error.message}`);
+
+  const docs = data as { status: string }[];
+  return {
+    total: docs.length,
+    classified: docs.filter((d) => d.status === "classified").length,
+    extracted: docs.filter((d) => d.status === "extracted").length,
+    failed: docs.filter((d) => d.status === "failed").length,
+    pending: docs.filter((d) => d.status === "pending").length,
+  };
+};
+
 export const updateDocumentExtraction = async (
   documentId: string,
   result: ExtractionResult

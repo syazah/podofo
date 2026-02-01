@@ -15,4 +15,12 @@ export class AI {
     }) {
         return await this.client.models.generateContent(params);
     }
+
+    public async sendMessageBatched(params: {
+        model: string;
+        src: any;
+        config?: { displayName?: string };
+    }) {
+        return await this.client.batches.create(params);
+    }
 }

@@ -4,6 +4,7 @@ import routes from "./routes.js";
 import { supabaseAdmin } from "./config/supabase/client.js";
 import { classificationWorker } from "./queue/worker/classifier.worker.js";
 import { extractionWorker } from "./queue/worker/extraction.worker.js";
+import { batchWorker } from "./queue/worker/batch.worker.js";
 import { HttpError } from "./config/HttpError.js";
 import httpStatus from "http-status";
 import { AppLogger } from "./config/logger.js";
@@ -36,6 +37,7 @@ const server = app.listen(port, () => {
     infoLogger.info(`PODOFO is listening on port ${port}, supabaseAdmin: ${supabaseAdmin}`);
     infoLogger.info(`Classification worker started: ${classificationWorker.name}`);
     infoLogger.info(`Extraction worker started: ${extractionWorker.name}`);
+    infoLogger.info(`Batch worker started: ${batchWorker.name}`);
 });
 
 async function shutdown() {
@@ -43,6 +45,7 @@ async function shutdown() {
     await Promise.all([
         classificationWorker.close(),
         extractionWorker.close(),
+        batchWorker.close(),
     ]);
     infoLogger.info("Workers closed.");
     server.close(() => {

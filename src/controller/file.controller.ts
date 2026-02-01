@@ -1,9 +1,14 @@
 import type { Request, Response, NextFunction } from "express";
 import { UploadService } from "../service/upload.service.js";
-import { getDocumentsByLotId } from "../data/document.data.js";
+import { getDocumentsByLotId, getDocumentCountsByStatus } from "../data/document.data.js";
+import { getLotById, updateLotStatusOnly } from "../data/lot.data.js";
 import { enqueueClassificationJobs } from "../queue/producer/classifier.js";
-import { enqueueExtractionJob } from "../queue/producer/extraction.producer.js";
+import { enqueueBatchSubmit } from "../queue/producer/batch.producer.js";
+import { projectConstants } from "../config/constants.js";
+import { AppLogger } from "../config/logger.js";
 
+const infoLogger = AppLogger.getInfoLogger();
+const uploadService = UploadService.getInstance();
 export const handleUploadFilesController = async (
   req: Request,
   res: Response,
@@ -17,11 +22,39 @@ export const handleUploadFilesController = async (
       return;
     }
 
-    const result = await new UploadService().processUpload(files);
+    const result = await uploadService.processUpload(files);
+
+    if (result.lot.status === "failed") {
+      res.status(500).json({
+        lot_id: result.lot.id,
+        status: result.lot.status,
+        errors: result.failed,
+      });
+      return;
+    }
+
+    const documents = await getDocumentsByLotId(result.lot.id);
+    const useBatchApi = documents.length > projectConstants.BATCH_API_THRESHOLD;
+
+    if (useBatchApi) {
+      await enqueueBatchSubmit({ lotId: result.lot.id, stage: "classification" });
+      infoLogger.info(
+        `[Upload] Lot ${result.lot.id}: ${documents.length} docs → Batch API path (50% cost savings)`
+      );
+    } else {
+      const { jobCount, batchSize } = await enqueueClassificationJobs(
+        result.lot.id,
+        documents
+      );
+      infoLogger.info(
+        `[Upload] Lot ${result.lot.id}: ${documents.length} docs → Standard API, enqueued ${jobCount} jobs (batch size ${batchSize})`
+      );
+    }
+    await updateLotStatusOnly(result.lot.id, "classifying");
 
     res.status(201).json({
       lot_id: result.lot.id,
-      status: result.lot.status,
+      status: "classifying",
       total: result.lot.total_files,
       uploaded: result.documents.length,
       failed: result.failed.length,
@@ -39,78 +72,47 @@ export const handleUploadFilesController = async (
   }
 };
 
-export const handleClassifyController = async (
+export const handleGetLotStatus = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { lotId } = req.body as { lotId?: string };
+    const id = req.params.id as string;
 
-    if (!lotId) {
-      res.status(400).json({ error: "lotId is required" });
+    if (!id) {
+      res.status(400).json({ error: "Lot ID is required" });
       return;
     }
 
-    const documents = await getDocumentsByLotId(lotId);
-
-    if (documents.length === 0) {
-      res.status(404).json({ error: `No documents found for lot ${lotId}` });
+    let lot;
+    try {
+      lot = await getLotById(id);
+    } catch {
+      res.status(404).json({ error: `Lot ${id} not found` });
       return;
     }
 
-    const { jobCount, batchSize } = await enqueueClassificationJobs(lotId, documents);
+    const counts = await getDocumentCountsByStatus(id);
+    const documents = await getDocumentsByLotId(id);
 
-    res.status(202).json({
-      lotId,
-      totalDocuments: documents.length,
-      jobCount,
-      batchSize,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const handleExtraction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { lotId } = req.body as { lotId?: string };
-
-    if (!lotId) {
-      res.status(400).json({ error: "lotId is required" });
-      return;
-    }
-
-    const documents = await getDocumentsByLotId(lotId);
-
-    if (documents.length === 0) {
-      res.status(404).json({ error: `No documents found for lot ${lotId}` });
-      return;
-    }
-
-    // Only extract documents that have been classified
-    const classified = documents.filter((doc) => doc.status === "classified");
-
-    if (classified.length === 0) {
-      res.status(400).json({
-        error: "No classified documents found. Run classification first.",
-        totalDocuments: documents.length,
-      });
-      return;
-    }
-
-    const { jobCount, batchSize } = await enqueueExtractionJob(lotId, classified);
-
-    res.status(202).json({
-      lotId,
-      totalDocuments: documents.length,
-      classifiedDocuments: classified.length,
-      jobCount,
-      batchSize,
+    res.status(200).json({
+      lotId: lot.id,
+      status: lot.status,
+      progress: {
+        total: counts.total,
+        classified: counts.classified,
+        extracted: counts.extracted,
+        failed: counts.failed,
+      },
+      documents: documents.map((doc) => ({
+        id: doc.id,
+        status: doc.status,
+        page_number: doc.page_number,
+        classification: doc.classification,
+        confidence: doc.confidence,
+        assigned_model: doc.assigned_model,
+      })),
     });
   } catch (error) {
     next(error);

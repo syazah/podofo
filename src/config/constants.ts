@@ -3,7 +3,10 @@ export const projectConstants = {
     BATCH_SIZE: 10,
     BUCKET: "pdfs",
     TARGET_DPI: 300,
-    PDF_DEFAULT_DPI: 72
+    PDF_DEFAULT_DPI: 72,
+    BATCH_API_THRESHOLD: 100,
+    BATCH_CHUNK_SIZE: 5,
+    BATCH_POLL_DELAY_MS: 30_000,
 }
 
 export const modelConstants = {

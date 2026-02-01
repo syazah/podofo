@@ -33,3 +33,29 @@ export const updateLotStatus = async (
   if (error) throw new Error(`Failed to update lot: ${error.message}`);
   return data as LotRow;
 };
+
+export const getLotById = async (lotId: string) => {
+  const { data, error } = await supabaseAdmin
+    .from("lots")
+    .select()
+    .eq("id", lotId)
+    .single();
+
+  if (error) throw new Error(`Failed to fetch lot ${lotId}: ${error.message}`);
+  return data as LotRow;
+};
+
+export const updateLotStatusOnly = async (lotId: string, status: string) => {
+  const { data, error } = await supabaseAdmin
+    .from("lots")
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", lotId)
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to update lot status: ${error.message}`);
+  return data as LotRow;
+};
