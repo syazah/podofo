@@ -26,7 +26,7 @@ export default function LotStatsPanel({ lot, documents, total }: Props) {
       }
 
       // Document type from metadata
-      const docType = doc.extracted_data ? JSON.parse(doc.extracted_data)?.document_type : null;
+      const docType = "string"
       if (docType && typeof docType === "string") {
         docTypeCounts[docType] = (docTypeCounts[docType] ?? 0) + 1;
       }
@@ -70,15 +70,14 @@ export default function LotStatsPanel({ lot, documents, total }: Props) {
         {/* Average Confidence */}
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="text-xs text-gray-500 mb-1">Avg Confidence</div>
-          <div className={`text-xl font-bold ${
-            stats.avgConfidence === null
+          <div className={`text-xl font-bold ${stats.avgConfidence === null
               ? "text-gray-400"
               : stats.avgConfidence >= 0.8
                 ? "text-green-600"
                 : stats.avgConfidence >= 0.5
                   ? "text-yellow-600"
                   : "text-red-600"
-          }`}>
+            }`}>
             {stats.avgConfidence !== null ? `${Math.round(stats.avgConfidence * 100)}%` : "-"}
           </div>
         </div>
@@ -100,9 +99,8 @@ export default function LotStatsPanel({ lot, documents, total }: Props) {
         {/* Success Rate */}
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="text-xs text-gray-500 mb-1">Success Rate</div>
-          <div className={`text-xl font-bold ${
-            (statusCounts(stats, "failed") === 0) ? "text-green-600" : "text-yellow-600"
-          }`}>
+          <div className={`text-xl font-bold ${(statusCounts(stats, "failed") === 0) ? "text-green-600" : "text-yellow-600"
+            }`}>
             {total > 0
               ? `${Math.round(((statusCounts(stats, "extracted")) / total) * 100)}%`
               : "-"

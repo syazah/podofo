@@ -568,6 +568,18 @@ podofo/
 
 ## Technical Write-Up
 
+- What was the hardest part?
+  The hardest path was using batch APIs of Gemini and handling various queues, designing the flow of data was critical.
+
+- How did you improve extraction accuracy?
+  By iterating over the prompts and playing with the various parameters for preprocessing, it was made possible for the extraction accuracy.
+
+- What did you learn?
+  I learnt to build a complex application in a short period of time which can handle a lot of load and talk with LLM, designing a system which handles a lot of data to and fro was pretty complex and this whole project was a good learning practice.
+
+- How did you use AI while building this?
+  I used AI to build major parts of frontend, and writing some basic boilerplate code, even writing the basic structure of this Readme.
+
 ### Approach & Methodology
 The system was designed around a pipeline architecture where each stage (upload, classification, extraction) operates independently through job queues. This decoupling provides several benefits:
 
