@@ -90,16 +90,17 @@ export class UploadService {
         try {
           const enhancedImage = await this.preprocessService.preprocessImage(rawImage);
           const imageHash = this.computeHash(enhancedImage);
-          const imageBase64 = Buffer.from(enhancedImage).toString("base64");
+          const storagePath = `processed/${lot.id}/${fileHash}_pageNum${pageNumber}.png`;
+
+          await this.s3Storage.uploadToStorage(storagePath, enhancedImage, "image/png");
 
           const doc = await createDocument({
             lot_id: lot.id,
             source_pdf_id: sourcePdf.id,
-            storage_path: null,
+            storage_path: storagePath,
             file_size: enhancedImage.byteLength,
             file_hash: imageHash,
             page_number: pageNumber,
-            image_base64: imageBase64,
           });
 
           processedIds.push(doc.id);

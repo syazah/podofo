@@ -5,8 +5,6 @@ import { AppLogger } from "../../config/logger.js";
 import { getDocumentCountsByStatus } from "../../data/document.data.js";
 import { updateLotStatusOnly } from "../../data/lot.data.js";
 import type { ExtractionJobData } from "../../types/extraction.js";
-import { supabaseAdmin } from "../../config/supabase/client.js";
-import type { DocumentRow } from "../../types/index.js";
 
 const QUEUE_NAME = "document-extraction";
 const infoLogger = AppLogger.getInfoLogger();
@@ -15,19 +13,10 @@ const errorLogger = AppLogger.getErrorLogger();
 export const extractionWorker = new Worker<ExtractionJobData>(
   QUEUE_NAME,
   async (job) => {
-    const { lotId, documentIds } = job.data;
+    const { lotId, documents } = job.data;
     infoLogger.info(
-      `[Extraction Worker] Processing job ${job.id}: lot=${lotId}, documents=${documentIds.length}`
+      `[Extraction Worker] Processing job ${job.id}: lot=${lotId}, documents=${documents.length}`
     );
-
-    // Fetch document metadata (without image) for processing
-    const { data, error } = await supabaseAdmin
-      .from("documents")
-      .select("id, lot_id, source_pdf_id, storage_path, file_size, file_hash, page_number, status, classification, assigned_model, extracted_data, confidence, field_confidences, cost_data, error_message, processing_time_ms, created_at, updated_at")
-      .in("id", documentIds);
-
-    if (error) throw new Error(`Failed to fetch documents: ${error.message}`);
-    const documents = data as DocumentRow[];
 
     const results = await extractDocumentBatch(documents);
 

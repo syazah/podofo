@@ -1,6 +1,8 @@
 import { Queue } from "bullmq";
 import type { ExtractionJobData } from "../../types/extraction.js";
 import { redisConnection } from "../../config/redis/connection.js";
+import type { DocumentRow } from "../../types/index.js";
+import type { createPartFromBase64 } from "@google/genai";
 
 const QUEUE_NAME = "document-extraction";
 const BATCH_SIZE = 25;
@@ -20,16 +22,16 @@ export const extractionQueue = new Queue<ExtractionJobData>(QUEUE_NAME, {
 
 export async function enqueueExtractionJob(
     lotId: string,
-    documentIds: string[]
+    documents: { docId: string; documentPart: ReturnType<typeof createPartFromBase64>, doc: DocumentRow }[]
 ) {
-    const batches: string[][] = [];
-    for (let i = 0; i < documentIds.length; i += BATCH_SIZE) {
-        batches.push(documentIds.slice(i, i + BATCH_SIZE));
+    const batches: typeof documents[] = [];
+    for (let i = 0; i < documents.length; i += BATCH_SIZE) {
+        batches.push(documents.slice(i, i + BATCH_SIZE));
     }
 
     const jobs = batches.map((batch, index) => ({
         name: `extract-lot-${lotId}-batch-${index}`,
-        data: { lotId, documentIds: batch },
+        data: { lotId, documents: batch },
     }));
 
     await extractionQueue.addBulk(jobs);

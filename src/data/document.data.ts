@@ -3,22 +3,18 @@ import type { ClassificationResult } from "../types/classification.js";
 import type { ExtractionResult } from "../types/extraction.js";
 import type { DocumentRow } from "../types/index.js";
 
-// All columns except image_base64 — used for queries that don't need the image data
-const DOC_COLUMNS = "id, lot_id, source_pdf_id, storage_path, file_size, file_hash, page_number, status, classification, assigned_model, extracted_data, confidence, field_confidences, cost_data, error_message, processing_time_ms, created_at, updated_at";
-
 export const createDocument = async (doc: {
   lot_id: string;
   source_pdf_id: string;
-  storage_path: string | null;
+  storage_path: string;
   file_size: number;
   file_hash: string;
   page_number: number;
-  image_base64: string;
 }) => {
   const { data, error } = await supabaseAdmin
     .from("documents")
     .insert(doc)
-    .select(DOC_COLUMNS)
+    .select()
     .single();
 
   if (error) throw new Error(`Failed to create document: ${error.message}`);
@@ -28,40 +24,11 @@ export const createDocument = async (doc: {
 export const getDocumentsByLotId = async (lotId: string) => {
   const { data, error } = await supabaseAdmin
     .from("documents")
-    .select(DOC_COLUMNS)
+    .select()
     .eq("lot_id", lotId);
 
   if (error) throw new Error(`Failed to fetch documents for lot ${lotId}: ${error.message}`);
   return data as DocumentRow[];
-};
-
-export const getDocumentsWithImageByLotId = async (lotId: string) => {
-  const { data, error } = await supabaseAdmin
-    .from("documents")
-    .select()
-    .eq("lot_id", lotId);
-
-  if (error) throw new Error(`Failed to fetch documents with images for lot ${lotId}: ${error.message}`);
-  return data as DocumentRow[];
-};
-
-export const getDocumentImagesByIds = async (
-  ids: string[]
-): Promise<Map<string, string>> => {
-  const { data, error } = await supabaseAdmin
-    .from("documents")
-    .select("id, image_base64")
-    .in("id", ids);
-
-  if (error) throw new Error(`Failed to fetch document images: ${error.message}`);
-
-  const map = new Map<string, string>();
-  for (const row of data as { id: string; image_base64: string | null }[]) {
-    if (row.image_base64) {
-      map.set(row.id, row.image_base64);
-    }
-  }
-  return map;
 };
 
 export const getDocumentsByLotIdPaginated = async (
@@ -74,7 +41,7 @@ export const getDocumentsByLotIdPaginated = async (
 
   const { data, error, count } = await supabaseAdmin
     .from("documents")
-    .select(DOC_COLUMNS, { count: "exact" })
+    .select("*", { count: "exact" })
     .eq("lot_id", lotId)
     .order("page_number", { ascending: true })
     .range(from, to);
@@ -97,7 +64,7 @@ export const updateDocumentClassification = async (
       status: "classified",
     })
     .eq("id", documentId)
-    .select(DOC_COLUMNS)
+    .select()
     .single();
 
   if (error)
@@ -137,7 +104,7 @@ export const updateDocumentExtraction = async (
       status: "extracted",
     })
     .eq("id", documentId)
-    .select(DOC_COLUMNS)
+    .select()
     .single();
 
   if (error)
