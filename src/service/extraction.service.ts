@@ -15,7 +15,6 @@ const DEFAULT_MODEL = modelConstants.GEMINI_FLASH;
 interface ParsedExtraction {
   documentId: string;
   fields: Record<string, unknown>;
-  tables: unknown[];
   metadata: Record<string, unknown>;
   confidence: number;
   field_confidences: Record<string, number>;
@@ -123,12 +122,16 @@ async function extractChunk(
         continue;
       }
 
+      // Flatten the data structure: spread fields at top level, add metadata with prefix
       const extractionResult: ExtractionResult = {
         documentId: doc.id,
         extractedData: {
-          fields: parsed.fields,
-          tables: parsed.tables,
-          metadata: parsed.metadata,
+          ...parsed.fields,
+          _metadata_document_type: parsed.metadata?.document_type ?? null,
+          _metadata_document_subtype: parsed.metadata?.document_subtype ?? null,
+          _metadata_date: parsed.metadata?.date ?? null,
+          _metadata_has_handwriting: parsed.metadata?.has_handwriting ?? false,
+          _metadata_quality_notes: parsed.metadata?.quality_notes ?? null,
         },
         confidence: parsed.confidence,
         fieldConfidences: parsed.field_confidences ?? {},

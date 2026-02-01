@@ -1,12 +1,12 @@
-import { useState } from "react";
 import DropZone from "../components/DropZone.tsx";
 import UploadQueue from "../components/UploadQueue.tsx";
 import LotProgress from "../components/LotProgress.tsx";
 import { useUpload } from "../hooks/useUpload.ts";
+import { useUploadContext } from "../context/UploadContext.tsx";
 
 export default function UploadPage() {
   const { files, addFiles, removeFile, upload, isUploading, error } = useUpload();
-  const [activeLotId, setActiveLotId] = useState<string | null>(null);
+  const { activeLotId, setActiveLotId } = useUploadContext();
 
   const handleUpload = async () => {
     const result = await upload();

@@ -21,3 +21,5 @@
 {"level":"error","message":"[Extraction Worker] Error: could not renew lock for job 4","timestamp":"2026-02-01T07:02:55.026Z"}
 {"level":"error","message":"[Extraction Worker] Error: Lock mismatch for job 4. Cmd moveToFinished from active","timestamp":"2026-02-01T07:04:54.247Z"}
 {"level":"error","message":"[Extraction Worker] Error: Lock mismatch for job 4. Cmd moveToDelayed from active","timestamp":"2026-02-01T07:04:54.256Z"}
+{"level":"error","message":"Gemini extraction failed (gemini-2.5-flash): Gemini returned empty response","timestamp":"2026-02-01T08:26:58.481Z"}
+{"level":"error","message":"Gemini extraction failed (gemini-2.5-flash): Gemini returned empty response","timestamp":"2026-02-01T08:50:20.092Z"}
