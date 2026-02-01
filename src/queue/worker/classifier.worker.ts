@@ -2,7 +2,6 @@ import { Worker } from "bullmq";
 import { redisConnection } from "../../config/redis/connection.js";
 import { ClassificationService } from "../../service/classifier.service.js";
 import { AppLogger } from "../../config/logger.js";
-import { getDocumentCountsByStatus, getDocumentsByLotId } from "../../data/document.data.js";
 import { updateLotStatusOnly } from "../../data/lot.data.js";
 import { enqueueExtractionJob } from "../producer/extraction.producer.js";
 import type { ClassificationJobData } from "../../types/classification.js";
@@ -58,14 +57,10 @@ classificationWorker.on("completed", async (job, returnValue) => {
       );
 
       if (succeeded > 0) {
-        const successfulDocs = results
-          .filter((r: any) => r.success && r.documentPart)
-          .map((r: any) => ({
-            id: r.documentId,
-            documentPart: r.documentPart,
-            doc: r.doc,
-          }));
-        const { jobCount, batchSize } = await enqueueExtractionJob(lotId, successfulDocs);
+        const successfulDocIds = results
+          .filter((r: { success: boolean }) => r.success)
+          .map((r: { documentId: string }) => r.documentId);
+        const { jobCount, batchSize } = await enqueueExtractionJob(lotId, successfulDocIds);
         await updateLotStatusOnly(lotId, "extracting");
         infoLogger.info(
           `[Worker] Lot ${lotId}: enqueued ${jobCount} extraction jobs (batch size ${batchSize})`

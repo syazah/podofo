@@ -36,6 +36,7 @@ export interface DocumentRow {
   cost_data: Record<string, unknown> | null;
   error_message: string | null;
   processing_time_ms: number | null;
+  image_base64: string | null;
   created_at: string;
   updated_at: string;
 }

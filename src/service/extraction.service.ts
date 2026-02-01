@@ -1,6 +1,5 @@
 import { createPartFromBase64 } from "@google/genai";
-import { S3Storage } from "../data/storage.data.js";
-import { updateDocumentExtraction } from "../data/document.data.js";
+import { getDocumentImagesByIds, updateDocumentExtraction } from "../data/document.data.js";
 import { getExtractionPrompt } from "../prompts/extractionPrompt.js";
 import { AppLogger } from "../config/logger.js";
 import { AI } from "./ai.service.js";
@@ -36,33 +35,33 @@ function parseExtractions(text: string, expectedCount: number): ParsedExtraction
   return parsed;
 }
 
-const s3Storage = S3Storage.getInstance();
 const infoLogger = AppLogger.getInfoLogger();
 const errorLogger = AppLogger.getErrorLogger();
 const ai = new AI(GeminiClient.getGeminiClient());
 
-export async function extractDocumentBatch(documents: { docId: string; documentPart: ReturnType<typeof createPartFromBase64>, doc: DocumentRow }[]) {
+export async function extractDocumentBatch(documents: DocumentRow[]) {
   const results: { documentId: string; success: boolean; error?: string }[] = [];
 
-  const extractable: { docId: string; documentPart: ReturnType<typeof createPartFromBase64>, doc: DocumentRow }[] = documents;
+  // Fetch base64 image data from DB in one batch query
+  const docIds = documents.map((d) => d.id);
+  const imageMap = await getDocumentImagesByIds(docIds);
 
-  const downloaded: { doc: DocumentRow; imagePart: ReturnType<typeof createPartFromBase64> }[] = [];
-  for (const doc of extractable) {
-    try {
-      const imagePart = doc.documentPart;
-      downloaded.push({ doc: doc.doc, imagePart });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      results.push({ documentId: doc.doc.id, success: false, error: message });
-      errorLogger.error(`Failed to download image for document ${doc.doc.id}: ${message}`);
+  const ready: { doc: DocumentRow; base64: string }[] = [];
+  for (const doc of documents) {
+    const base64 = imageMap.get(doc.id);
+    if (!base64) {
+      results.push({ documentId: doc.id, success: false, error: "No image data found" });
+      errorLogger.error(`No image data for document ${doc.id}`);
+      continue;
     }
+    ready.push({ doc, base64 });
   }
 
-  if (downloaded.length === 0) return results;
+  if (ready.length === 0) return results;
 
   // Group by assigned model for smart routing
-  const byModel = new Map<string, { doc: DocumentRow; imagePart: ReturnType<typeof createPartFromBase64> }[]>();
-  for (const item of downloaded) {
+  const byModel = new Map<string, { doc: DocumentRow; base64: string }[]>();
+  for (const item of ready) {
     const model = item.doc.assigned_model ?? DEFAULT_MODEL;
     const group = byModel.get(model);
     if (group) {
@@ -85,16 +84,16 @@ export async function extractDocumentBatch(documents: { docId: string; documentP
 }
 
 async function extractChunk(
-  chunk: { doc: DocumentRow; imagePart: ReturnType<typeof createPartFromBase64> }[],
+  chunk: { doc: DocumentRow; base64: string }[],
   model: string
 ): Promise<{ documentId: string; success: boolean; error?: string }[]> {
   const results: { documentId: string; success: boolean; error?: string }[] = [];
 
   // Interleave docId labels with image parts, then the prompt
   const contentParts: (string | ReturnType<typeof createPartFromBase64>)[] = [];
-  for (const { doc, imagePart } of chunk) {
+  for (const { doc, base64 } of chunk) {
     contentParts.push(`Document ID: ${doc.id}`);
-    contentParts.push(imagePart);
+    contentParts.push(createPartFromBase64(base64, "image/png"));
   }
   contentParts.push(getExtractionPrompt(chunk.length));
 

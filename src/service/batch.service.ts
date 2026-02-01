@@ -1,6 +1,5 @@
 import { JobState } from "@google/genai";
 import { GeminiClient } from "../config/gemini/client.js";
-import { S3Storage } from "../data/storage.data.js";
 import { AppLogger } from "../config/logger.js";
 import { modelConstants } from "../config/constants.js";
 import { getImageClassificationPrompt } from "../prompts/classificationPrompts.js";
@@ -11,7 +10,6 @@ import type { ClassificationResult, AssignedModel, DocumentClassification } from
 import type { ExtractionResult } from "../types/extraction.js";
 
 const client = GeminiClient.getGeminiClient();
-const s3Storage = S3Storage.getInstance();
 const infoLogger = AppLogger.getInfoLogger();
 const errorLogger = AppLogger.getErrorLogger();
 
@@ -30,29 +28,22 @@ export class BatchService {
     const validDocIds: string[] = [];
 
     for (const doc of documents) {
-      if (!doc.storage_path) continue;
-      try {
-        const buffer = await s3Storage.downloadImage(doc.storage_path);
-        const base64 = buffer.toString("base64");
+      if (!doc.image_base64) continue;
 
-        inlinedRequests.push({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                { text: `Document ID: ${doc.id}` },
-                { inlineData: { mimeType: "image/png", data: base64 } },
-                { text: getImageClassificationPrompt(1) },
-              ],
-            },
-          ],
-          metadata: { documentId: doc.id },
-        });
-        validDocIds.push(doc.id);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        errorLogger.error(`[BatchService] Failed to download image for doc ${doc.id}: ${msg}`);
-      }
+      inlinedRequests.push({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: `Document ID: ${doc.id}` },
+              { inlineData: { mimeType: "image/png", data: doc.image_base64 } },
+              { text: getImageClassificationPrompt(1) },
+            ],
+          },
+        ],
+        metadata: { documentId: doc.id },
+      });
+      validDocIds.push(doc.id);
     }
 
     if (inlinedRequests.length === 0) {
@@ -82,29 +73,22 @@ export class BatchService {
     const validDocIds: string[] = [];
 
     for (const doc of documents) {
-      if (!doc.storage_path || !doc.assigned_model) continue;
-      try {
-        const buffer = await s3Storage.downloadImage(doc.storage_path);
-        const base64 = buffer.toString("base64");
+      if (!doc.image_base64 || !doc.assigned_model) continue;
 
-        inlinedRequests.push({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                { text: `Document ID: ${doc.id}` },
-                { inlineData: { mimeType: "image/png", data: base64 } },
-                { text: getExtractionPrompt(1) },
-              ],
-            },
-          ],
-          metadata: { documentId: doc.id },
-        });
-        validDocIds.push(doc.id);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        errorLogger.error(`[BatchService] Failed to download image for doc ${doc.id}: ${msg}`);
-      }
+      inlinedRequests.push({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: `Document ID: ${doc.id}` },
+              { inlineData: { mimeType: "image/png", data: doc.image_base64 } },
+              { text: getExtractionPrompt(1) },
+            ],
+          },
+        ],
+        metadata: { documentId: doc.id },
+      });
+      validDocIds.push(doc.id);
     }
 
     if (inlinedRequests.length === 0) {

@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 import { JobState } from "@google/genai";
 import { redisConnection } from "../../config/redis/connection.js";
 import { BatchService } from "../../service/batch.service.js";
-import { getDocumentsByLotId, getDocumentCountsByStatus } from "../../data/document.data.js";
+import { getDocumentsByLotId, getDocumentCountsByStatus, getDocumentsWithImageByLotId } from "../../data/document.data.js";
 import { updateLotStatusOnly } from "../../data/lot.data.js";
 import { enqueueBatchPoll, enqueueBatchSubmit } from "../producer/batch.producer.js";
 import { modelConstants, projectConstants } from "../../config/constants.js";
@@ -30,11 +30,13 @@ export const batchWorker = new Worker(
 
 async function handleSubmit(data: BatchSubmitJobData) {
   const { lotId, stage } = data;
-  const documents = await getDocumentsByLotId(lotId);
+
+  // Fetch documents WITH image_base64 for batch submission
+  const documents = await getDocumentsWithImageByLotId(lotId);
 
   if (stage === "classification") {
     const pendingDocs = documents.filter(
-      (d) => d.status === "pending" && d.storage_path
+      (d) => d.status === "pending" && d.image_base64
     );
 
     for (let i = 0; i < pendingDocs.length; i += projectConstants.BATCH_CHUNK_SIZE) {
@@ -57,7 +59,7 @@ async function handleSubmit(data: BatchSubmitJobData) {
     );
   } else if (stage === "extraction") {
     const classifiedDocs = documents.filter(
-      (d) => d.status === "classified" && d.storage_path && d.assigned_model
+      (d) => d.status === "classified" && d.image_base64 && d.assigned_model
     );
 
     // Group by assigned model for smart routing
