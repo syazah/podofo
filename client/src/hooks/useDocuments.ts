@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getLotDocuments } from "../api/client.ts";
 import type { DocumentWithExtraction } from "../types/index.ts";
 
@@ -7,35 +7,29 @@ export function useDocuments(lotId: string | null, page: number, limit: number) 
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchDocs = useCallback(async () => {
     if (!lotId) {
       setDocuments([]);
       setTotal(0);
       return;
     }
 
-    let cancelled = false;
     setIsLoading(true);
-
-    getLotDocuments(lotId, page, limit)
-      .then((data) => {
-        if (cancelled) return;
-        setDocuments(data.documents);
-        setTotal(data.total);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setDocuments([]);
-        setTotal(0);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    try {
+      const data = await getLotDocuments(lotId, page, limit);
+      setDocuments(data.documents);
+      setTotal(data.total);
+    } catch {
+      setDocuments([]);
+      setTotal(0);
+    } finally {
+      setIsLoading(false);
+    }
   }, [lotId, page, limit]);
 
-  return { documents, total, isLoading };
+  useEffect(() => {
+    fetchDocs();
+  }, [fetchDocs]);
+
+  return { documents, total, isLoading, refetch: fetchDocs };
 }
