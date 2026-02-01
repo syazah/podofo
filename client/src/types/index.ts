@@ -42,7 +42,7 @@ export interface DocumentWithExtraction {
   status: string;
   classification: string | null;
   assigned_model: string | null;
-  extracted_data: Record<string, unknown> | null;
+  extracted_data: string | null;
   confidence: number | null;
   field_confidences: Record<string, number> | null;
   error_message: string | null;

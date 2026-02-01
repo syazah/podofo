@@ -36,27 +36,10 @@ export default function DataTable({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
-  // Separate metadata fields from regular extracted fields
-  const { extractedFieldNames, hasMetadata } = useMemo(() => {
-    const keys = new Set<string>();
-    let foundMetadata = false;
-    for (const doc of data) {
-      if (doc.extracted_data) {
-        for (const key of Object.keys(doc.extracted_data)) {
-          // Skip metadata fields from dynamic columns - we'll add them as fixed columns
-          if (key.startsWith("_metadata_")) {
-            foundMetadata = true;
-            continue;
-          }
-          keys.add(key);
-        }
-      }
-    }
-    return { extractedFieldNames: Array.from(keys), hasMetadata: foundMetadata };
-  }, [data]);
+  // No need to extract field names anymore - we display as paragraph
 
   const columns = useMemo<ColumnDef<DocumentWithExtraction>[]>(() => {
-    const base: ColumnDef<DocumentWithExtraction>[] = [
+    return [
       {
         accessorKey: "page_number",
         header: "Page #",
@@ -98,61 +81,15 @@ export default function DataTable({
         },
         size: 100,
       },
-    ];
-
-    // Add metadata columns if metadata is present
-    const metadataColumns: ColumnDef<DocumentWithExtraction>[] = hasMetadata
-      ? [
-          {
-            id: "doc_type",
-            header: "Doc Type",
-            accessorFn: (row) => row.extracted_data?._metadata_document_type ?? "-",
-            cell: ({ getValue }) => {
-              const val = getValue<string>();
-              if (val === "-" || !val) return <span className="text-gray-400">-</span>;
-              return (
-                <span className="text-xs px-2 py-0.5 rounded font-medium bg-purple-50 text-purple-700">
-                  {val}
-                </span>
-              );
-            },
-            size: 100,
-          },
-          {
-            id: "doc_date",
-            header: "Doc Date",
-            accessorFn: (row) => row.extracted_data?._metadata_date ?? "-",
-            cell: ({ getValue }) => {
-              const val = getValue<string>();
-              return val && val !== "-" ? val : <span className="text-gray-400">-</span>;
-            },
-            size: 110,
-          },
-        ]
-      : [];
-
-    const dynamic: ColumnDef<DocumentWithExtraction>[] = extractedFieldNames.map(
-      (fieldName) => ({
-        id: `field_${fieldName}`,
-        header: fieldName,
-        accessorFn: (row) => row.extracted_data?.[fieldName],
-        cell: ({ getValue, row }) => {
-          const val = getValue<unknown>();
-          const fieldConf = row.original.field_confidences?.[fieldName] ?? null;
-          return (
-            <div className="flex items-center gap-2">
-              <ExpandableCell value={val} maxLength={40} />
-              {fieldConf !== null && (
-                <ConfidenceBadge value={fieldConf} />
-              )}
-            </div>
-          );
+      {
+        accessorKey: "extracted_data",
+        header: "Extracted Data",
+        cell: ({ getValue }) => {
+          const val = getValue<string | null>();
+          return <ExpandableCell value={val} maxLength={100} />;
         },
-        size: 180,
-      })
-    );
-
-    const tail: ColumnDef<DocumentWithExtraction>[] = [
+        size: 400,
+      },
       {
         accessorKey: "confidence",
         header: "Confidence",
@@ -160,9 +97,7 @@ export default function DataTable({
         size: 100,
       },
     ];
-
-    return [...base, ...metadataColumns, ...dynamic, ...tail];
-  }, [extractedFieldNames, hasMetadata]);
+  }, []);
 
   const table = useReactTable({
     data,

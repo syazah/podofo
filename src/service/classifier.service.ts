@@ -88,7 +88,7 @@ export class ClassificationService {
     const documentPart: { documentId: string; part: ReturnType<typeof createPartFromBase64> }[] = [];
     for (const { doc, buffer } of chunk) {
       contentParts.push(`Document ID: ${doc.id}`);
-      const part = createPartFromBase64(buffer.toString("base64"), "image/png");
+      const part = createPartFromBase64(buffer.toString("base64"), "image/jpeg");
       contentParts.push(part);
       documentPart.push({ documentId: doc.id, part });
     }

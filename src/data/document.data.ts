@@ -91,6 +91,26 @@ export const getDocumentCountsByStatus = async (lotId: string) => {
   };
 };
 
+export const updateDocumentStatus = async (
+  documentId: string,
+  status: string,
+  errorMessage?: string
+) => {
+  const { data, error } = await supabaseAdmin
+    .from("documents")
+    .update({
+      status,
+      error_message: errorMessage ?? null,
+    })
+    .eq("id", documentId)
+    .select()
+    .single();
+
+  if (error)
+    throw new Error(`Failed to update status for document ${documentId}: ${error.message}`);
+  return data as DocumentRow;
+};
+
 export const updateDocumentExtraction = async (
   documentId: string,
   result: ExtractionResult

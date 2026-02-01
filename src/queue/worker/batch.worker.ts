@@ -116,7 +116,10 @@ async function handlePoll(data: BatchPollJobData) {
 
       // Check if all documents in the lot are classified
       const counts = await getDocumentCountsByStatus(lotId);
-      if (counts.classified + counts.failed === counts.total) {
+      infoLogger.info(
+        `[BatchWorker] Lot ${lotId} status check: total=${counts.total}, classified=${counts.classified}, failed=${counts.failed}, pending=${counts.pending}, extracted=${counts.extracted}`
+      );
+      if (counts.pending === 0 && counts.classified + counts.failed === counts.total) {
         infoLogger.info(
           `[BatchWorker] All docs in lot ${lotId} classified (${counts.classified} ok, ${counts.failed} failed). Starting extraction.`
         );
@@ -142,6 +145,9 @@ async function handlePoll(data: BatchPollJobData) {
 
       // Check if all documents in the lot are done
       const counts = await getDocumentCountsByStatus(lotId);
+      infoLogger.info(
+        `[BatchWorker] Lot ${lotId} extraction check: total=${counts.total}, extracted=${counts.extracted}, classified=${counts.classified}, failed=${counts.failed}, pending=${counts.pending}`
+      );
       if (counts.extracted + counts.failed === counts.total) {
         const finalStatus = counts.failed > 0 ? "partial_failure" : "completed";
         await updateLotStatusOnly(lotId, finalStatus);
@@ -151,10 +157,28 @@ async function handlePoll(data: BatchPollJobData) {
       }
     }
   } else {
-    // Failed or cancelled
+    // Failed or cancelled - mark documents as failed
     errorLogger.error(
       `[BatchWorker] Batch ${geminiJobName} ended with state ${state}. Stats: ${JSON.stringify(batchJob.completionStats)}`
     );
+
+    // Update all documents in this batch to failed status
+    const { updateDocumentStatus } = await import("../../data/document.data.js");
+    for (const docId of documentIds) {
+      try {
+        await updateDocumentStatus(docId, "failed", `Batch job failed: ${state}`);
+      } catch (err) {
+        errorLogger.error(`[BatchWorker] Failed to mark doc ${docId} as failed: ${err}`);
+      }
+    }
+
+    // Check if lot should be marked as failed
+    const counts = await getDocumentCountsByStatus(lotId);
+    if (counts.pending === 0) {
+      const finalStatus = counts.extracted > 0 || counts.classified > 0 ? "partial_failure" : "failed";
+      await updateLotStatusOnly(lotId, finalStatus);
+      infoLogger.info(`[BatchWorker] Lot ${lotId} marked as ${finalStatus} after batch failure`);
+    }
   }
 }
 

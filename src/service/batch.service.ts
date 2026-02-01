@@ -5,7 +5,7 @@ import { AppLogger } from "../config/logger.js";
 import { modelConstants } from "../config/constants.js";
 import { getImageClassificationPrompt } from "../prompts/classificationPrompts.js";
 import { getExtractionPrompt } from "../prompts/extractionPrompt.js";
-import { updateDocumentClassification, updateDocumentExtraction } from "../data/document.data.js";
+import { updateDocumentClassification, updateDocumentExtraction, updateDocumentStatus } from "../data/document.data.js";
 import type { DocumentRow } from "../types/index.js";
 import type { ClassificationResult, AssignedModel, DocumentClassification } from "../types/classification.js";
 import type { ExtractionResult } from "../types/extraction.js";
@@ -41,7 +41,7 @@ export class BatchService {
               role: "user",
               parts: [
                 { text: `Document ID: ${doc.id}` },
-                { inlineData: { mimeType: "image/png", data: base64 } },
+                { inlineData: { mimeType: "image/jpeg", data: base64 } },
                 { text: getImageClassificationPrompt(1) },
               ],
             },
@@ -93,7 +93,7 @@ export class BatchService {
               role: "user",
               parts: [
                 { text: `Document ID: ${doc.id}` },
-                { inlineData: { mimeType: "image/png", data: base64 } },
+                { inlineData: { mimeType: "image/jpeg", data: base64 } },
                 { text: getExtractionPrompt(1) },
               ],
             },
@@ -156,15 +156,18 @@ export class BatchService {
     for (const docId of documentIds) {
       const resp = responseByDocId.get(docId);
       if (!resp) {
+        await updateDocumentStatus(docId, "failed", "No response in batch results");
         results.push({ documentId: docId, success: false, error: "No response in batch results" });
         continue;
       }
 
       if ((resp as any).error) {
+        const errorMsg = (resp as any).error.message ?? "Batch request failed";
+        await updateDocumentStatus(docId, "failed", errorMsg);
         results.push({
           documentId: docId,
           success: false,
-          error: (resp as any).error.message ?? "Batch request failed",
+          error: errorMsg,
         });
         continue;
       }
@@ -195,6 +198,7 @@ export class BatchService {
         );
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
+        await updateDocumentStatus(docId, "failed", msg);
         results.push({ documentId: docId, success: false, error: msg });
         errorLogger.error(`[BatchService] Failed to process classification for doc ${docId}: ${msg}`);
       }
@@ -226,15 +230,18 @@ export class BatchService {
     for (const docId of documentIds) {
       const resp = responseByDocId.get(docId);
       if (!resp) {
+        await updateDocumentStatus(docId, "failed", "No response in batch results");
         results.push({ documentId: docId, success: false, error: "No response in batch results" });
         continue;
       }
 
       if ((resp as any).error) {
+        const errorMsg = (resp as any).error.message ?? "Batch request failed";
+        await updateDocumentStatus(docId, "failed", errorMsg);
         results.push({
           documentId: docId,
           success: false,
-          error: (resp as any).error.message ?? "Batch request failed",
+          error: errorMsg,
         });
         continue;
       }
@@ -247,12 +254,16 @@ export class BatchService {
         const parsed = JSON.parse(cleaned);
         const extraction = Array.isArray(parsed) ? parsed[0] : parsed;
 
+        // Flatten the data structure: spread fields at top level, add metadata with prefix
         const extractionResult: ExtractionResult = {
           documentId: docId,
           extractedData: {
-            fields: extraction.fields ?? {},
-            tables: extraction.tables ?? [],
-            metadata: extraction.metadata ?? {},
+            ...extraction.fields,
+            _metadata_document_type: extraction.metadata?.document_type ?? null,
+            _metadata_document_subtype: extraction.metadata?.document_subtype ?? null,
+            _metadata_date: extraction.metadata?.date ?? null,
+            _metadata_has_handwriting: extraction.metadata?.has_handwriting ?? false,
+            _metadata_quality_notes: extraction.metadata?.quality_notes ?? null,
           },
           confidence: extraction.confidence ?? 0,
           fieldConfidences: extraction.field_confidences ?? {},
@@ -265,6 +276,7 @@ export class BatchService {
         );
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
+        await updateDocumentStatus(docId, "failed", msg);
         results.push({ documentId: docId, success: false, error: msg });
         errorLogger.error(`[BatchService] Failed to process extraction for doc ${docId}: ${msg}`);
       }

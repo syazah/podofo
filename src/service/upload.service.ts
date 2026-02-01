@@ -90,9 +90,9 @@ export class UploadService {
         try {
           const enhancedImage = await this.preprocessService.preprocessImage(rawImage);
           const imageHash = this.computeHash(enhancedImage);
-          const storagePath = `processed/${lot.id}/${fileHash}_pageNum${pageNumber}.png`;
+          const storagePath = `processed/${lot.id}/${fileHash}_pageNum${pageNumber}.jpg`;
 
-          await this.s3Storage.uploadToStorage(storagePath, enhancedImage, "image/png");
+          await this.s3Storage.uploadToStorage(storagePath, enhancedImage, "image/jpeg");
 
           const doc = await createDocument({
             lot_id: lot.id,
