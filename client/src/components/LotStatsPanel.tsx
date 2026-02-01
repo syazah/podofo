@@ -26,7 +26,7 @@ export default function LotStatsPanel({ lot, documents, total }: Props) {
       }
 
       // Document type from metadata
-      const docType = doc.extracted_data?._metadata_document_type;
+      const docType = doc.extracted_data ? JSON.parse(doc.extracted_data)?.document_type : null;
       if (docType && typeof docType === "string") {
         docTypeCounts[docType] = (docTypeCounts[docType] ?? 0) + 1;
       }
