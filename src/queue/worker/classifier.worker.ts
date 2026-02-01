@@ -2,15 +2,17 @@ import { Worker } from "bullmq";
 import { redisConnection } from "../../config/redis/connection.js";
 import { ClassificationService } from "../../service/classifier.service.js";
 import { AppLogger } from "../../config/logger.js";
-import { getDocumentCountsByStatus, getDocumentsByLotId } from "../../data/document.data.js";
-import { updateLotStatusOnly } from "../../data/lot.data.js";
 import { enqueueExtractionJob } from "../producer/extraction.producer.js";
 import type { ClassificationJobData } from "../../types/classification.js";
+import { LotDB } from "../../data/lot.data.js";
+import { DocumentDB } from "../../data/document.data.js";
 
 const QUEUE_NAME = "document-classification";
 const infoLogger = AppLogger.getInfoLogger();
 const errorLogger = AppLogger.getErrorLogger();
 const classificationService = new ClassificationService();
+const lotDB = LotDB.getInstance();
+const docDB = DocumentDB.getInstance();
 
 export const classificationWorker = new Worker<ClassificationJobData>(
   QUEUE_NAME,
@@ -66,12 +68,12 @@ classificationWorker.on("completed", async (job, returnValue) => {
             doc: r.doc,
           }));
         const { jobCount, batchSize } = await enqueueExtractionJob(lotId, successfulDocs);
-        await updateLotStatusOnly(lotId, "extracting");
+        await lotDB.updateLotStatusOnly(lotId, "extracting");
         infoLogger.info(
           `[Worker] Lot ${lotId}: enqueued ${jobCount} extraction jobs (batch size ${batchSize})`
         );
       } else {
-        await updateLotStatusOnly(lotId, "failed");
+        await lotDB.updateLotStatusOnly(lotId, "failed");
         errorLogger.error(`[Worker] Lot ${lotId}: all documents in batch failed classification`);
       }
     }

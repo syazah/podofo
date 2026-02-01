@@ -3,131 +3,144 @@ import type { ClassificationResult } from "../types/classification.js";
 import type { ExtractionResult } from "../types/extraction.js";
 import type { DocumentRow } from "../types/index.js";
 
-export const createDocument = async (doc: {
-  lot_id: string;
-  source_pdf_id: string;
-  storage_path: string;
-  file_size: number;
-  file_hash: string;
-  page_number: number;
-}) => {
-  const { data, error } = await supabaseAdmin
-    .from("documents")
-    .insert(doc)
-    .select()
-    .single();
+export class DocumentDB {
+  private static instance: DocumentDB
+  private constructor() { }
 
-  if (error) throw new Error(`Failed to create document: ${error.message}`);
-  return data as DocumentRow;
-};
+  public static getInstance(): DocumentDB {
+    if (!DocumentDB.instance) {
+      DocumentDB.instance = new DocumentDB()
+    }
+    return DocumentDB.instance;
+  }
 
-export const getDocumentsByLotId = async (lotId: string) => {
-  const { data, error } = await supabaseAdmin
-    .from("documents")
-    .select()
-    .eq("lot_id", lotId);
+  createDocument = async (doc: {
+    lot_id: string;
+    source_pdf_id: string;
+    storage_path: string;
+    file_size: number;
+    file_hash: string;
+    page_number: number;
+  }) => {
+    const { data, error } = await supabaseAdmin
+      .from("documents")
+      .insert(doc)
+      .select()
+      .single();
 
-  if (error) throw new Error(`Failed to fetch documents for lot ${lotId}: ${error.message}`);
-  return data as DocumentRow[];
-};
-
-export const getDocumentsByLotIdPaginated = async (
-  lotId: string,
-  page: number,
-  limit: number
-) => {
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
-  const { data, error, count } = await supabaseAdmin
-    .from("documents")
-    .select("*", { count: "exact" })
-    .eq("lot_id", lotId)
-    .order("page_number", { ascending: true })
-    .range(from, to);
-
-  if (error)
-    throw new Error(`Failed to fetch documents for lot ${lotId}: ${error.message}`);
-  return { documents: data as DocumentRow[], total: count ?? 0 };
-};
-
-export const updateDocumentClassification = async (
-  documentId: string,
-  result: ClassificationResult
-) => {
-  const { data, error } = await supabaseAdmin
-    .from("documents")
-    .update({
-      classification: result.classification,
-      assigned_model: result.assigned_model,
-      confidence: result.confidence,
-      status: "classified",
-    })
-    .eq("id", documentId)
-    .select()
-    .single();
-
-  if (error)
-    throw new Error(`Failed to update classification for document ${documentId}: ${error.message}`);
-  return data as DocumentRow;
-};
-
-export const getDocumentCountsByStatus = async (lotId: string) => {
-  const { data, error } = await supabaseAdmin
-    .from("documents")
-    .select("status")
-    .eq("lot_id", lotId);
-
-  if (error)
-    throw new Error(`Failed to fetch document counts for lot ${lotId}: ${error.message}`);
-
-  const docs = data as { status: string }[];
-  return {
-    total: docs.length,
-    classified: docs.filter((d) => d.status === "classified").length,
-    extracted: docs.filter((d) => d.status === "extracted").length,
-    failed: docs.filter((d) => d.status === "failed").length,
-    pending: docs.filter((d) => d.status === "pending").length,
+    if (error) throw new Error(`Failed to create document: ${error.message}`);
+    return data as DocumentRow;
   };
-};
 
-export const updateDocumentStatus = async (
-  documentId: string,
-  status: string,
-  errorMessage?: string
-) => {
-  const { data, error } = await supabaseAdmin
-    .from("documents")
-    .update({
-      status,
-      error_message: errorMessage ?? null,
-    })
-    .eq("id", documentId)
-    .select()
-    .single();
+  getDocumentsByLotId = async (lotId: string) => {
+    const { data, error } = await supabaseAdmin
+      .from("documents")
+      .select()
+      .eq("lot_id", lotId);
 
-  if (error)
-    throw new Error(`Failed to update status for document ${documentId}: ${error.message}`);
-  return data as DocumentRow;
-};
+    if (error) throw new Error(`Failed to fetch documents for lot ${lotId}: ${error.message}`);
+    return data as DocumentRow[];
+  };
 
-export const updateDocumentExtraction = async (
-  documentId: string,
-  result: ExtractionResult
-) => {
-  const { data, error } = await supabaseAdmin
-    .from("documents")
-    .update({
-      extracted_data: result.extractedData,
-      confidence: result.confidence,
-      field_confidences: result.fieldConfidences,
-      status: "extracted",
-    })
-    .eq("id", documentId)
-    .select()
-    .single();
+  getDocumentsByLotIdPaginated = async (
+    lotId: string,
+    page: number,
+    limit: number
+  ) => {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-  if (error)
-    throw new Error(`Failed to update extraction for document ${documentId}: ${error.message}`);
-  return data as DocumentRow;
-};
+    const { data, error, count } = await supabaseAdmin
+      .from("documents")
+      .select("*", { count: "exact" })
+      .eq("lot_id", lotId)
+      .order("page_number", { ascending: true })
+      .range(from, to);
+
+    if (error)
+      throw new Error(`Failed to fetch documents for lot ${lotId}: ${error.message}`);
+    return { documents: data as DocumentRow[], total: count ?? 0 };
+  };
+
+  updateDocumentClassification = async (
+    documentId: string,
+    result: ClassificationResult
+  ) => {
+    const { data, error } = await supabaseAdmin
+      .from("documents")
+      .update({
+        classification: result.classification,
+        assigned_model: result.assigned_model,
+        confidence: result.confidence,
+        status: "classified",
+      })
+      .eq("id", documentId)
+      .select()
+      .single();
+
+    if (error)
+      throw new Error(`Failed to update classification for document ${documentId}: ${error.message}`);
+    return data as DocumentRow;
+  };
+
+  getDocumentCountsByStatus = async (lotId: string) => {
+    const { data, error } = await supabaseAdmin
+      .from("documents")
+      .select("status")
+      .eq("lot_id", lotId);
+
+    if (error)
+      throw new Error(`Failed to fetch document counts for lot ${lotId}: ${error.message}`);
+
+    const docs = data as { status: string }[];
+    return {
+      total: docs.length,
+      classified: docs.filter((d) => d.status === "classified").length,
+      extracted: docs.filter((d) => d.status === "extracted").length,
+      failed: docs.filter((d) => d.status === "failed").length,
+      pending: docs.filter((d) => d.status === "pending").length,
+    };
+  };
+
+  updateDocumentStatus = async (
+    documentId: string,
+    status: string,
+    errorMessage?: string
+  ) => {
+    const { data, error } = await supabaseAdmin
+      .from("documents")
+      .update({
+        status,
+        error_message: errorMessage ?? null,
+      })
+      .eq("id", documentId)
+      .select()
+      .single();
+
+    if (error)
+      throw new Error(`Failed to update status for document ${documentId}: ${error.message}`);
+    return data as DocumentRow;
+  };
+
+  updateDocumentExtraction = async (
+    documentId: string,
+    result: ExtractionResult
+  ) => {
+    const { data, error } = await supabaseAdmin
+      .from("documents")
+      .update({
+        extracted_data: result.extractedData,
+        confidence: result.confidence,
+        field_confidences: result.fieldConfidences,
+        status: "extracted",
+      })
+      .eq("id", documentId)
+      .select()
+      .single();
+
+    if (error)
+      throw new Error(`Failed to update extraction for document ${documentId}: ${error.message}`);
+    return data as DocumentRow;
+  };
+
+}

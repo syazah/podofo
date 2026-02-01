@@ -1,12 +1,15 @@
 import crypto from "crypto";
 import { Document, PDFDocument, Matrix, ColorSpace } from "mupdf";
-import { createLot, updateLotStatus } from "../data/lot.data.js";
-import { createSourcePdf } from "../data/source_pdf.data.js";
-import { createDocument } from "../data/document.data.js";
 import { PreprocessService } from "./preprocess.service.js";
 import { projectConstants } from "../config/constants.js";
 import { S3Storage } from "../data/storage.data.js";
+import { DocumentDB } from "../data/document.data.js";
+import { LotDB } from "../data/lot.data.js";
+import { SourcePDFDB } from "../data/source_pdf.data.js";
 
+const docDB = DocumentDB.getInstance();
+const lotDB = LotDB.getInstance();
+const sourcePdfDB = SourcePDFDB.getInstance();
 export class UploadService {
   private s3Storage: S3Storage = S3Storage.getInstance();
   private preprocessService: PreprocessService = PreprocessService.getInstance();
@@ -48,8 +51,8 @@ export class UploadService {
   async processUpload(
     files: Express.Multer.File[]
   ): Promise<{
-    lot: Awaited<ReturnType<typeof createLot>>;
-    documents: Awaited<ReturnType<typeof createDocument>>[];
+    lot: Awaited<ReturnType<typeof lotDB.createLot>>;
+    documents: Awaited<ReturnType<typeof docDB.createDocument>>[];
     failed: { filename: string; page: number; error: string }[];
   }> {
     const fileImagesMap: { file: Express.Multer.File; images: Uint8Array[] }[] = [];
@@ -61,11 +64,11 @@ export class UploadService {
       totalPages += images.length;
     }
 
-    const lot = await createLot(totalPages);
+    const lot = await lotDB.createLot(totalPages);
 
     const processedIds: string[] = [];
     const failedIds: string[] = [];
-    const documents: Awaited<ReturnType<typeof createDocument>>[] = [];
+    const documents: Awaited<ReturnType<typeof docDB.createDocument>>[] = [];
     const failed: { filename: string; page: number; error: string }[] = [];
 
     for (const { file, images } of fileImagesMap) {
@@ -74,7 +77,7 @@ export class UploadService {
 
       await this.s3Storage.uploadToStorage(originalStoragePath, file.buffer, "application/pdf");
 
-      const sourcePdf = await createSourcePdf({
+      const sourcePdf = await sourcePdfDB.createSourcePdf({
         lot_id: lot.id,
         original_filename: file.originalname,
         storage_path: originalStoragePath,
@@ -94,7 +97,7 @@ export class UploadService {
 
           await this.s3Storage.uploadToStorage(storagePath, enhancedImage, "image/jpeg");
 
-          const doc = await createDocument({
+          const doc = await docDB.createDocument({
             lot_id: lot.id,
             source_pdf_id: sourcePdf.id,
             storage_path: storagePath,
@@ -123,7 +126,7 @@ export class UploadService {
           ? "failed"
           : "uploaded";
 
-    const updatedLot = await updateLotStatus(
+    const updatedLot = await lotDB.updateLotStatus(
       lot.id,
       lotStatus,
       processedIds,

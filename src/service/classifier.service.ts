@@ -1,6 +1,5 @@
 import { createPartFromBase64 } from "@google/genai";
 import { GeminiClient } from "../config/gemini/client.js";
-import { updateDocumentClassification } from "../data/document.data.js";
 import { getImageClassificationPrompt } from "../prompts/classificationPrompts.js";
 import type { AssignedModel, ClassificationResult, DocumentClassification } from "../types/classification.js";
 import type { DocumentRow } from "../types/index.js";
@@ -8,9 +7,11 @@ import { modelConstants, projectConstants } from "../config/constants.js";
 import { S3Storage } from "../data/storage.data.js";
 import { AppLogger } from "../config/logger.js";
 import { AI } from "./ai.service.js";
+import { DocumentDB } from "../data/document.data.js";
 
 const GEMINI_BATCH_SIZE = 25;
 
+const docDB = DocumentDB.getInstance();
 export class ClassificationService {
   private assignedModel: string;
   private s3Storage = S3Storage.getInstance();
@@ -129,7 +130,7 @@ export class ClassificationService {
         };
 
         try {
-          await updateDocumentClassification(doc.id, result);
+          await docDB.updateDocumentClassification(doc.id, result);
           const imagePart = documentPart.find(dp => dp.documentId === doc.id)?.part;
           if (!imagePart) {
             results.push({ documentId: doc.id, success: false, error: "Image part not found", doc });

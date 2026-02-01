@@ -1,16 +1,18 @@
 import type { Request, Response, NextFunction } from "express";
 import { UploadService } from "../service/upload.service.js";
-import { getDocumentsByLotId, getDocumentCountsByStatus, getDocumentsByLotIdPaginated } from "../data/document.data.js";
-import { getLotById, updateLotStatusOnly, getAllLots } from "../data/lot.data.js";
 import { enqueueClassificationJobs } from "../queue/producer/classification.producer.js";
 import { enqueueBatchSubmit } from "../queue/producer/batch.producer.js";
 import { projectConstants } from "../config/constants.js";
 import { AppLogger } from "../config/logger.js";
 import { HttpError } from "../config/HttpError.js";
 import httpStatus from "http-status";
+import { LotDB } from "../data/lot.data.js";
+import { DocumentDB } from "../data/document.data.js";
 
 const infoLogger = AppLogger.getInfoLogger();
 const uploadService = UploadService.getInstance();
+const lotDB = LotDB.getInstance();
+const docDB = DocumentDB.getInstance();
 export const handleUploadFilesController = async (
   req: Request,
   res: Response,
@@ -51,7 +53,7 @@ export const handleUploadFilesController = async (
         `[Upload] Lot ${result.lot.id}: ${result.documents.length} docs → Standard API, enqueued ${jobCount} jobs (batch size ${batchSize})`
       );
     }
-    await updateLotStatusOnly(result.lot.id, "classifying");
+    await lotDB.updateLotStatusOnly(result.lot.id, "classifying");
 
     res.status(201).json({
       lot_id: result.lot.id,
@@ -88,14 +90,14 @@ export const handleGetLotStatus = async (
 
     let lot;
     try {
-      lot = await getLotById(id);
+      lot = await lotDB.getLotById(id);
     } catch {
       res.status(404).json({ error: `Lot ${id} not found` });
       return;
     }
 
-    const counts = await getDocumentCountsByStatus(id);
-    const documents = await getDocumentsByLotId(id);
+    const counts = await docDB.getDocumentCountsByStatus(id);
+    const documents = await docDB.getDocumentsByLotId(id);
 
     res.status(200).json({
       lotId: lot.id,
@@ -126,7 +128,7 @@ export const handleGetLots = async (
   next: NextFunction
 ) => {
   try {
-    const lots = await getAllLots();
+    const lots = await lotDB.getAllLots();
     res.status(200).json(
       lots.map((lot) => ({
         id: lot.id,
@@ -156,13 +158,13 @@ export const handleGetLotDocuments = async (
     }
 
     try {
-      await getLotById(id);
+      await lotDB.getLotById(id);
     } catch {
       res.status(404).json({ error: `Lot ${id} not found` });
       return;
     }
 
-    const { documents, total } = await getDocumentsByLotIdPaginated(id, page, limit);
+    const { documents, total } = await docDB.getDocumentsByLotIdPaginated(id, page, limit);
 
     res.status(200).json({
       documents: documents.map((doc) => ({
@@ -207,13 +209,13 @@ export const handleExportLotDocuments = async (
     }
 
     try {
-      await getLotById(id);
+      await lotDB.getLotById(id);
     } catch {
       res.status(404).json({ error: `Lot ${id} not found` });
       return;
     }
 
-    const documents = await getDocumentsByLotId(id);
+    const documents = await docDB.getDocumentsByLotId(id);
 
     if (format === "json") {
       res.setHeader("Content-Disposition", `attachment; filename=lot-${id}.json`);
@@ -236,13 +238,13 @@ export const handleExportLotDocuments = async (
     const rows = documents.map((doc) => {
       const extractedFields = doc.extracted_data
         ? Object.entries(doc.extracted_data)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join("; ")
+          .map(([k, v]) => `${k}: ${v}`)
+          .join("; ")
         : "";
       const fieldConfs = doc.field_confidences
         ? Object.entries(doc.field_confidences)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join("; ")
+          .map(([k, v]) => `${k}: ${v}`)
+          .join("; ")
         : "";
       return [
         doc.id,

@@ -2,14 +2,15 @@ import { Worker } from "bullmq";
 import { redisConnection } from "../../config/redis/connection.js";
 import { extractDocumentBatch } from "../../service/extraction.service.js";
 import { AppLogger } from "../../config/logger.js";
-import { getDocumentCountsByStatus } from "../../data/document.data.js";
-import { updateLotStatusOnly } from "../../data/lot.data.js";
 import type { ExtractionJobData } from "../../types/extraction.js";
+import { LotDB } from "../../data/lot.data.js";
+import { DocumentDB } from "../../data/document.data.js";
 
 const QUEUE_NAME = "document-extraction";
 const infoLogger = AppLogger.getInfoLogger();
 const errorLogger = AppLogger.getErrorLogger();
-
+const lotDB = LotDB.getInstance();
+const docDB = DocumentDB.getInstance();
 export const extractionWorker = new Worker<ExtractionJobData>(
   QUEUE_NAME,
   async (job) => {
@@ -45,12 +46,12 @@ extractionWorker.on("completed", async (job) => {
 
   try {
     const { lotId } = job.data;
-    const counts = await getDocumentCountsByStatus(lotId);
+    const counts = await docDB.getDocumentCountsByStatus(lotId);
 
     // Check if all documents are done with extraction (extracted or failed)
     if (counts.extracted + counts.failed === counts.total) {
       const finalStatus = counts.failed > 0 ? "partial_failure" : "completed";
-      await updateLotStatusOnly(lotId, finalStatus);
+      await lotDB.updateLotStatusOnly(lotId, finalStatus);
       infoLogger.info(
         `[Extraction Worker] Lot ${lotId} finished: status=${finalStatus} (${counts.extracted} extracted, ${counts.failed} failed)`
       );

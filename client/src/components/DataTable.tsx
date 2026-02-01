@@ -178,9 +178,8 @@ export default function DataTable({
                 return (
                   <tr
                     key={row.id}
-                    className={`hover:bg-gray-50 ${
-                      hasLowConfidence ? "border-l-2 border-l-red-400" : ""
-                    }`}
+                    className={`hover:bg-gray-50 ${hasLowConfidence ? "border-l-2 border-l-red-400" : ""
+                      }`}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-3 py-2.5 text-gray-700">
@@ -243,11 +242,10 @@ export default function DataTable({
                 <button
                   key={pageNum}
                   onClick={() => onPageChange(pageNum)}
-                  className={`px-2.5 py-1 text-sm rounded-md ${
-                    pageNum === page
+                  className={`px-2.5 py-1 text-sm rounded-md ${pageNum === page
                       ? "bg-gray-900 text-white"
                       : "border border-gray-300 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   {pageNum}
                 </button>

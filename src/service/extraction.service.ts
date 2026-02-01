@@ -1,6 +1,5 @@
 import { createPartFromBase64 } from "@google/genai";
 import { S3Storage } from "../data/storage.data.js";
-import { updateDocumentExtraction } from "../data/document.data.js";
 import { getExtractionPrompt } from "../prompts/extractionPrompt.js";
 import { AppLogger } from "../config/logger.js";
 import { AI } from "./ai.service.js";
@@ -8,10 +7,11 @@ import { GeminiClient } from "../config/gemini/client.js";
 import { modelConstants } from "../config/constants.js";
 import type { ExtractionResult } from "../types/extraction.js";
 import type { DocumentRow } from "../types/index.js";
+import { DocumentDB } from "../data/document.data.js";
 
 const GEMINI_BATCH_SIZE = 5;
 const DEFAULT_MODEL = modelConstants.GEMINI_FLASH;
-
+const docDB = DocumentDB.getInstance();
 interface ParsedExtraction {
   documentId: string;
   fields: Record<string, unknown>;
@@ -59,7 +59,6 @@ export async function extractDocumentBatch(documents: { docId: string; documentP
 
   if (downloaded.length === 0) return results;
 
-  // Group by assigned model for smart routing
   const byModel = new Map<string, { doc: DocumentRow; imagePart: ReturnType<typeof createPartFromBase64> }[]>();
   for (const item of downloaded) {
     const model = item.doc.assigned_model ?? DEFAULT_MODEL;
@@ -71,7 +70,7 @@ export async function extractDocumentBatch(documents: { docId: string; documentP
     }
   }
 
-  // Process each model group in sub-batches
+
   for (const [model, items] of byModel) {
     for (let i = 0; i < items.length; i += GEMINI_BATCH_SIZE) {
       const chunk = items.slice(i, i + GEMINI_BATCH_SIZE);
@@ -138,7 +137,7 @@ async function extractChunk(
       };
 
       try {
-        await updateDocumentExtraction(doc.id, extractionResult);
+        await docDB.updateDocumentExtraction(doc.id, extractionResult);
         results.push({ documentId: doc.id, success: true });
         infoLogger.info(
           `Extracted document ${doc.id} via ${model} (confidence: ${parsed.confidence})`
