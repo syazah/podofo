@@ -60,3 +60,113 @@
 {"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T13:27:50.869Z"}
 {"level":"error","message":"[Worker] Error: read EADDRNOTAVAIL","timestamp":"2026-02-01T13:27:56.566Z"}
 {"level":"error","message":"[Extraction Worker] Error: read EADDRNOTAVAIL","timestamp":"2026-02-01T13:27:58.004Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T13:56:36.416Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T13:56:36.417Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T14:11:59.657Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T14:11:59.658Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T14:27:22.902Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T14:27:22.903Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T14:42:46.109Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T14:42:46.110Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T14:58:09.346Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T14:58:09.347Z"}
+{"level":"error","message":"[BatchWorker] Error: read ECONNRESET","timestamp":"2026-02-01T15:14:57.559Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:14:57.560Z"}
+{"level":"error","message":"[BatchWorker] Error: read ECONNRESET","timestamp":"2026-02-01T15:14:57.565Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:14:57.668Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:15:00.779Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:15:06.202Z"}
+{"level":"error","message":"[Worker] Error: connect ETIMEDOUT","timestamp":"2026-02-01T15:30:07.721Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:30:08.254Z"}
+{"level":"error","message":"[BatchWorker] Error: read ECONNRESET","timestamp":"2026-02-01T15:30:08.256Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:30:09.268Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T15:30:09.398Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:42:15.518Z"}
+{"level":"error","message":"[BatchWorker] Error: read ECONNRESET","timestamp":"2026-02-01T15:42:15.519Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:42:15.519Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:57:22.841Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T15:57:22.848Z"}
+{"level":"error","message":"[BatchWorker] Error: read ECONNRESET","timestamp":"2026-02-01T15:57:22.848Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T16:12:29.605Z"}
+{"level":"error","message":"[BatchWorker] Error: read ECONNRESET","timestamp":"2026-02-01T16:12:29.606Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T16:12:29.606Z"}
+{"level":"error","message":"[BatchWorker] Error: read EADDRNOTAVAIL","timestamp":"2026-02-01T16:21:14.082Z"}
+{"level":"error","message":"[Extraction Worker] Error: read EADDRNOTAVAIL","timestamp":"2026-02-01T16:21:14.082Z"}
+{"level":"error","message":"[Worker] Error: read EADDRNOTAVAIL","timestamp":"2026-02-01T16:21:14.082Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:15.094Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:15.094Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:15.095Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:16.103Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:16.104Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:16.106Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:17.122Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:17.123Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:17.123Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:18.140Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:18.141Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-01T16:21:18.143Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T16:21:21.119Z"}
+{"level":"error","message":"[BatchWorker] Error: read ECONNRESET","timestamp":"2026-02-01T16:21:21.720Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T16:21:23.765Z"}
+{"level":"error","message":"[Worker] Error: read ECONNRESET","timestamp":"2026-02-01T16:36:29.144Z"}
+{"level":"error","message":"[BatchWorker] Error: read ECONNRESET","timestamp":"2026-02-01T16:36:29.146Z"}
+{"level":"error","message":"[Extraction Worker] Error: read ECONNRESET","timestamp":"2026-02-01T16:36:29.146Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:34.603Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:34.665Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:34.674Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:35.616Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:35.680Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:35.681Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:36.619Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:36.693Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:36.693Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:37.625Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:37.702Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:37.702Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:38.638Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:38.718Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:38.719Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:39.643Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:39.724Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:39.729Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:40.742Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:40.828Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:40.828Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:43.727Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:43.815Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:43.815Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:51.834Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:51.925Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:57:51.926Z"}
+{"level":"error","message":"[Extraction Worker] Error: read EADDRNOTAVAIL","timestamp":"2026-02-02T02:58:01.726Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:02.732Z"}
+{"level":"error","message":"[Worker] Error: read EADDRNOTAVAIL","timestamp":"2026-02-02T02:58:02.788Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:03.738Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:03.806Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:04.743Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:04.814Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:05.748Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:05.821Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:06.758Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:06.832Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:07.770Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:07.840Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:08.845Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:08.870Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:09.947Z"}
+{"level":"error","message":"[BatchWorker] Error: read EADDRNOTAVAIL","timestamp":"2026-02-02T02:58:11.440Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:11.839Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:11.858Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:11.932Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:11.933Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:12.446Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:12.932Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:13.453Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:14.458Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:15.467Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:16.473Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:17.480Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:18.583Z"}
+{"level":"error","message":"[Extraction Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:19.979Z"}
+{"level":"error","message":"[Worker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:21.039Z"}
+{"level":"error","message":"[BatchWorker] Error: getaddrinfo ENOTFOUND dear-sunfish-10356.upstash.io","timestamp":"2026-02-02T02:58:21.570Z"}

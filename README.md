@@ -514,6 +514,11 @@ The `client/netlify.toml` handles SPA redirect rules automatically.
 ---
 
 ## Screenshots
+![Screenshot 0](client/public/scrn0.png)
+![Screenshot 1](client/public/scrn1.png)
+![Screenshot 2](client/public/scrn2.png)
+![Screenshot 3](client/public/scrn3.png)
+
 
 ## Project Structure
 
