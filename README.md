@@ -2,9 +2,6 @@
 
 An AI-powered system that processes PDF documents through intelligent classification and data extraction using Google Gemini models, with smart model routing and cost optimization via the Batch API.
 
-**Live Demo:** [https://podofo.netlify.app]
-**Backend API:** [https://internal-corabel-syazah-aeb3f9df.koyeb.app/]
-
 ---
 
 ## Table of Contents
